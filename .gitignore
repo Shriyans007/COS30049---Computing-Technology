@@ -1,0 +1,25 @@
+ .gitignore | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+A  .gitignore
+?? README.md
+?? classification/
+?? data/
+?? requirements.txt
+?? tests/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+.idea/
+.vscode/
+
+# Generated classification outputs and trained artifacts
+artifacts/
+outputs/
+
+# Local datasets are not committed by default
+data/**/*.csv
+!data/README.md
