@@ -17,4 +17,3 @@ python -m classification.train
 The CSV is intentionally ignored by Git because it exceeds GitHub's file-size
 limit. This instruction file keeps the folder available after cloning or
 pulling the repository.
-.gitignore:25:
