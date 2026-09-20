@@ -9,8 +9,17 @@ venv/
 .vscode/
 
 # Generated classification outputs and trained artifacts
-artifacts/
-outputs/
+artifacts/*
+!artifacts/classification/
+artifacts/classification/*
+!artifacts/classification/final_text_classifier.joblib
+!artifacts/classification/model_metadata.json
+
+outputs/*
+!outputs/classification/
+outputs/classification/*
+!outputs/classification/model_comparison.csv
+!outputs/classification/validation_metrics.csv
 
 # Local datasets are not committed by default
 data/**/*.csv

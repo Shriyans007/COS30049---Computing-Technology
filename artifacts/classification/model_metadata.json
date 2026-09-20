@@ -1,0 +1,58 @@
+{
+  "status": "trained_on_person_2_combined_dataset",
+  "selected_model": "linear_svm",
+  "selected_model_display": "Linear SVM",
+  "selection_rule": "highest validation F1, then validation accuracy",
+  "evaluation_unit": "sentence, with document-grouped splitting",
+  "score_note": "Linear SVM scores are decision scores, not probabilities.",
+  "class_mapping": {
+    "0": "human",
+    "1": "ai"
+  },
+  "numeric_features": [
+    "char_count",
+    "word_count",
+    "avg_word_len",
+    "vocab_div_ratio",
+    "complex_word_ratio",
+    "stopword_ratio",
+    "upper_letter_ratio",
+    "numeric_digit_ratio",
+    "semicolon_dash_count",
+    "doc_pos",
+    "is_first_sent",
+    "is_last_sent"
+  ],
+  "dataset_audit": {
+    "original_rows": 1580111,
+    "original_documents": 123474,
+    "duplicate_documents_removed": 734,
+    "conflicting_sentence_rows_removed": 228291,
+    "duplicate_sentence_rows_removed": 81812,
+    "final_rows": 1262979,
+    "final_documents": 120069
+  },
+  "split_rows": {
+    "train": 883145,
+    "validation": 188962,
+    "test": 190872
+  },
+  "split_documents": {
+    "train": 84047,
+    "validation": 18011,
+    "test": 18011
+  },
+  "config": {
+    "dataset": "upload/CSV files.zip",
+    "zip_member": "CSV files/clean_dataset.csv",
+    "text_column": "text",
+    "label_column": "label",
+    "id_column": "id",
+    "output_dir": "outputs/classification",
+    "artifact_dir": "artifacts/classification",
+    "random_seed": 42,
+    "max_features": 20000,
+    "xgboost_estimators": 80,
+    "remove_exact_duplicates": true
+  }
+}
