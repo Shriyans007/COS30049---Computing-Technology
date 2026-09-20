@@ -23,8 +23,14 @@ def small_dataset(tmp_path):
     ]
     rows = []
     for index in range(20):
-        rows.append({"id": f"h-{index}", "text": f"{human_templates[index % 4]} {index}", "label": "human"})
-        rows.append({"id": f"a-{index}", "text": f"{ai_templates[index % 4]} {index}", "label": "ai"})
+        rows.append({
+            "doc_id": f"h-{index}", "sent_id": 0,
+            "text": f"{human_templates[index % 4]} {index}", "label": "human"
+        })
+        rows.append({
+            "doc_id": f"a-{index}", "sent_id": 0,
+            "text": f"{ai_templates[index % 4]} {index}", "label": "ai"
+        })
     path = tmp_path / "test_fixture.csv"
     pd.DataFrame(rows).to_csv(path, index=False)
     return path
@@ -64,4 +70,3 @@ def test_training_saving_loading_prediction_and_exports(tmp_path, small_dataset)
 def test_predict_rejects_empty_text(tmp_path):
     with pytest.raises(ValueError, match="non-empty"):
         predict_text("   ", tmp_path / "missing.joblib")
-
