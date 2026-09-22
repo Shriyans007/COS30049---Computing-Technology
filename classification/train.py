@@ -16,6 +16,7 @@ from .models import DISPLAY_NAMES, build_models, evaluate_models, select_model
 @dataclass(frozen=True)
 class TrainingConfig:
     dataset: str
+    unit: str = "sentence"
     zip_member: str | None = None
     text_column: str = "text"
     label_column: str = "label"
@@ -29,6 +30,8 @@ class TrainingConfig:
 
 
 def run_training(config: TrainingConfig) -> dict[str, object]:
+    if config.unit not in {"sentence", "document"}:
+        raise ValueError("Training unit must be 'sentence' or 'document'.")
     output_dir = Path(config.output_dir)
     artifact_dir = Path(config.artifact_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -43,7 +46,12 @@ def run_training(config: TrainingConfig) -> dict[str, object]:
         remove_exact_duplicates=config.remove_exact_duplicates,
     )
     audit = data.attrs.get("audit", {})
-    print(f"Prepared {len(data):,} sentence rows from {data['doc_id'].nunique():,} documents.", flush=True)
+    row_name = "sentence" if config.unit == "sentence" else "document"
+    print(
+        f"Prepared {len(data):,} {row_name} rows from "
+        f"{data['doc_id'].nunique():,} documents.",
+        flush=True,
+    )
     splits = split_dataset(data, random_seed=config.random_seed)
     models = build_models(
         random_seed=config.random_seed,
@@ -73,11 +81,16 @@ def run_training(config: TrainingConfig) -> dict[str, object]:
         raise RuntimeError("Reloaded model predictions do not match the saved model.")
 
     metadata = {
-        "status": "trained_on_person_2_combined_dataset",
+        "status": f"trained_on_person_2_{config.unit}_dataset",
+        "unit": config.unit,
         "selected_model": selected_name,
         "selected_model_display": DISPLAY_NAMES[selected_name],
         "selection_rule": "highest validation F1, then validation accuracy",
-        "evaluation_unit": "sentence, with document-grouped splitting",
+        "evaluation_unit": (
+            "sentence, with document-grouped splitting"
+            if config.unit == "sentence"
+            else "full source document"
+        ),
         "score_note": "Linear SVM scores are decision scores, not probabilities.",
         "class_mapping": {"0": "human", "1": "ai"},
         "numeric_features": NUMERIC_FEATURES,
@@ -108,13 +121,14 @@ def run_training(config: TrainingConfig) -> dict[str, object]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train and compare text classifiers.")
-    parser.add_argument("--dataset", default="data/processed/final_dataset.csv")
+    parser.add_argument("--unit", choices=["sentence", "document"], default="sentence")
+    parser.add_argument("--dataset")
     parser.add_argument("--zip-member")
     parser.add_argument("--text-column", default="text")
     parser.add_argument("--label-column", default="label")
     parser.add_argument("--id-column", default="id")
-    parser.add_argument("--output-dir", default="outputs/classification")
-    parser.add_argument("--artifact-dir", default="artifacts/classification")
+    parser.add_argument("--output-dir")
+    parser.add_argument("--artifact-dir")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max-features", type=int, default=20_000)
     parser.add_argument("--xgboost-estimators", type=int, default=80)
@@ -124,14 +138,23 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    if args.unit == "sentence":
+        default_dataset = "data/processed/final_dataset.csv"
+        default_output = "outputs/classification"
+        default_artifact = "artifacts/classification"
+    else:
+        default_dataset = "data/processed/para_dataset.csv"
+        default_output = "outputs/document_classification"
+        default_artifact = "artifacts/document_classification"
     config = TrainingConfig(
-        dataset=args.dataset,
+        dataset=args.dataset or default_dataset,
+        unit=args.unit,
         zip_member=args.zip_member,
         text_column=args.text_column,
         label_column=args.label_column,
         id_column=args.id_column or None,
-        output_dir=args.output_dir,
-        artifact_dir=args.artifact_dir,
+        output_dir=args.output_dir or default_output,
+        artifact_dir=args.artifact_dir or default_artifact,
         random_seed=args.seed,
         max_features=args.max_features,
         xgboost_estimators=args.xgboost_estimators,

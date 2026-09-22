@@ -14,12 +14,21 @@ artifacts/*
 artifacts/classification/*
 !artifacts/classification/final_text_classifier.joblib
 !artifacts/classification/model_metadata.json
+!artifacts/document_classification/
+artifacts/document_classification/*
+!artifacts/document_classification/final_text_classifier.joblib
+!artifacts/document_classification/model_metadata.json
 
 outputs/*
 !outputs/classification/
 outputs/classification/*
 !outputs/classification/model_comparison.csv
 !outputs/classification/validation_metrics.csv
+!outputs/document_classification/
+outputs/document_classification/*
+!outputs/document_classification/model_comparison.csv
+!outputs/document_classification/validation_metrics.csv
+!outputs/level_comparison.csv
 
 # Local datasets are not committed by default
 data/**/*.csv

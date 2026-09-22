@@ -6,20 +6,36 @@ from pathlib import Path
 import joblib
 
 from .data import LABEL_NAMES
-from .features import text_to_feature_frame
+from .features import text_to_document_feature_frame, text_to_feature_frame
 from .models import prediction_scores
 
 
 DEFAULT_MODEL_PATH = Path("artifacts/classification/final_text_classifier.joblib")
 
 
-def predict_text(text: str, model_path: str | Path = DEFAULT_MODEL_PATH) -> dict[str, object]:
+def predict_text(
+    text: str,
+    model_path: str | Path | None = None,
+    unit: str = "sentence",
+) -> dict[str, object]:
     if not isinstance(text, str) or not text.strip():
         raise ValueError("Text must be a non-empty string.")
+    if unit not in {"sentence", "document"}:
+        raise ValueError("Prediction unit must be 'sentence' or 'document'.")
+    if model_path is None:
+        model_path = (
+            DEFAULT_MODEL_PATH
+            if unit == "sentence"
+            else Path("artifacts/document_classification/final_text_classifier.joblib")
+        )
     artifact_path = Path(model_path)
     if not artifact_path.is_file():
         raise FileNotFoundError(f"Trained model not found: {artifact_path}")
-    samples = text_to_feature_frame(text)
+    samples = (
+        text_to_feature_frame(text)
+        if unit == "sentence"
+        else text_to_document_feature_frame(text)
+    )
     model = joblib.load(artifact_path)
     predictions = model.predict(samples)
     scores, score_type = prediction_scores(model, samples)
@@ -47,9 +63,10 @@ def predict_text(text: str, model_path: str | Path = DEFAULT_MODEL_PATH) -> dict
 def main() -> None:
     parser = argparse.ArgumentParser(description="Classify text using a saved model.")
     parser.add_argument("text", help="Text to classify")
-    parser.add_argument("--model", default=str(DEFAULT_MODEL_PATH))
+    parser.add_argument("--unit", choices=["sentence", "document"], default="sentence")
+    parser.add_argument("--model")
     args = parser.parse_args()
-    print(predict_text(args.text, args.model))
+    print(predict_text(args.text, args.model, args.unit))
 
 
 if __name__ == "__main__":

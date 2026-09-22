@@ -70,3 +70,33 @@ def test_training_saving_loading_prediction_and_exports(tmp_path, small_dataset)
 def test_predict_rejects_empty_text(tmp_path):
     with pytest.raises(ValueError, match="non-empty"):
         predict_text("   ", tmp_path / "missing.joblib")
+
+
+def test_document_level_training_and_prediction(tmp_path, small_dataset):
+    output_dir = tmp_path / "document_outputs"
+    artifact_dir = tmp_path / "document_artifacts"
+    result = run_training(
+        TrainingConfig(
+            dataset=str(small_dataset),
+            output_dir=str(output_dir),
+            artifact_dir=str(artifact_dir),
+            unit="document",
+            max_features=500,
+            xgboost_estimators=8,
+        )
+    )
+
+    assert result["selected_model"] in {
+        "logistic_regression", "linear_svm", "xgboost"
+    }
+    prediction = predict_text(
+        "I drafted this introduction yesterday. Then I revised the conclusion.",
+        artifact_dir / "final_text_classifier.joblib",
+        unit="document",
+    )
+    assert prediction["label"] in {"human", "ai"}
+    assert len(prediction["sentence_results"]) == 1
+
+    metadata = json.loads((artifact_dir / "model_metadata.json").read_text(encoding="utf-8"))
+    assert metadata["unit"] == "document"
+    assert metadata["evaluation_unit"] == "full source document"

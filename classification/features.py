@@ -75,3 +75,21 @@ def text_to_feature_frame(text: str) -> pd.DataFrame:
             **sentence_features(sentence, position, len(sentences)),
         })
     return pd.DataFrame(rows)
+
+
+def text_to_document_feature_frame(text: str) -> pd.DataFrame:
+    """Create the single-row representation used by the document model."""
+    cleaned = clean_text(text)
+    if not re.search(r"\w", cleaned):
+        raise ValueError("Text must contain at least one word.")
+    return pd.DataFrame(
+        [
+            {
+                "doc_id": 0,
+                "sent_id": 0,
+                "sample_id": "0:0",
+                "text": cleaned,
+                **sentence_features(cleaned, 0, 1),
+            }
+        ]
+    )
