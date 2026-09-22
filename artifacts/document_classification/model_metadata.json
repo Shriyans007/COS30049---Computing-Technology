@@ -1,10 +1,10 @@
 {
-  "status": "trained_on_person_2_sentence_dataset",
-  "unit": "sentence",
+  "status": "trained_on_person_2_document_dataset",
+  "unit": "document",
   "selected_model": "linear_svm",
   "selected_model_display": "Linear SVM",
   "selection_rule": "highest validation F1, then validation accuracy",
-  "evaluation_unit": "sentence, with document-grouped splitting",
+  "evaluation_unit": "full source document",
   "score_note": "Linear SVM scores are decision scores, not probabilities.",
   "class_mapping": {
     "0": "human",
@@ -25,33 +25,33 @@
     "is_last_sent"
   ],
   "dataset_audit": {
-    "original_rows": 1573082,
+    "original_rows": 122740,
     "original_documents": 122740,
     "duplicate_documents_removed": 0,
-    "conflicting_sentence_rows_removed": 228291,
-    "duplicate_sentence_rows_removed": 81812,
-    "final_rows": 1262979,
-    "final_documents": 120069
+    "conflicting_sentence_rows_removed": 0,
+    "duplicate_sentence_rows_removed": 0,
+    "final_rows": 122740,
+    "final_documents": 122740
   },
   "split_rows": {
-    "train": 883145,
-    "validation": 188962,
-    "test": 190872
+    "train": 85918,
+    "validation": 18411,
+    "test": 18411
   },
   "split_documents": {
-    "train": 84047,
-    "validation": 18011,
-    "test": 18011
+    "train": 85918,
+    "validation": 18411,
+    "test": 18411
   },
   "config": {
-    "dataset": "upload/final_dataset.csv.zip",
-    "unit": "sentence",
-    "zip_member": "final_dataset.csv",
+    "dataset": "upload/Para dataset.zip",
+    "unit": "document",
+    "zip_member": "Para dataset/para_dataset.csv",
     "text_column": "text",
     "label_column": "label",
     "id_column": "id",
-    "output_dir": "outputs/classification",
-    "artifact_dir": "artifacts/classification",
+    "output_dir": "outputs/document_classification",
+    "artifact_dir": "artifacts/document_classification",
     "random_seed": 42,
     "max_features": 20000,
     "xgboost_estimators": 80,
