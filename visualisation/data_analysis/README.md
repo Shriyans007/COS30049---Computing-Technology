@@ -1,7 +1,7 @@
 # Data Analysis
 
 
-- `eda.py` — produces summary statistics and four visualisations from the
+`eda.py` — produces summary statistics and four visualisations from the
   sentence-level dataset.
 
 ## Input
