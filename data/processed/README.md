@@ -43,7 +43,7 @@ Labels: `0` = human, `1` = AI.
 ## Features
 
 | Feature | Captures |
-
+|---|---|
 | `char_count` | Raw sentence length |
 | `word_count` | Verbosity — AI tends toward uniform lengths |
 | `avg_word_len` | Lexical complexity |
