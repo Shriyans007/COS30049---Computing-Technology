@@ -3,45 +3,31 @@
 Assignment 2 machine-learning code for classifying human-written and
 AI-generated text. The frontend is intentionally out of scope.
 
-## Current results
+## Current status
 
-Person 2 supplied two representations of the combined three-source dataset.
-They are trained separately:
+Person 2 supplied sentence- and document-level representations of the combined
+three-source dataset. The preprocessing and classification code is complete,
+but the models must be retrained after the corrected feature formulas are used.
+The model files and metric CSVs currently committed in the repository are from
+an earlier dataset version and must not be quoted as final Assignment 2 results.
 
-- Sentence level: 1,573,082 input rows. Conflict and duplicate cleanup leaves
-  1,262,979 sentences from 120,069 documents.
-- Document level: 122,740 rows, each containing one complete original
-  document/essay. The file is named `para_dataset.csv`, but its rows are whole
-  documents rather than individual paragraphs.
-
-Both workflows use reproducible stratified 70/15/15 train/validation/test
-partitions. Sentence rows are grouped by `doc_id`, preventing sentences from
-one essay appearing across different partitions.
-
-### Sentence-level test results
-
-| Model | Accuracy | Precision | Recall | F1 |
-| --- | ---: | ---: | ---: | ---: |
-| Logistic Regression | 0.8099 | 0.6848 | 0.8341 | 0.7521 |
-| Linear SVM | **0.8901** | **0.8175** | **0.8781** | **0.8468** |
-| XGBoost | 0.7759 | 0.7882 | 0.4809 | 0.5973 |
-
-### Document-level test results
-
-| Model | Accuracy | Precision | Recall | F1 |
-| --- | ---: | ---: | ---: | ---: |
-| Logistic Regression | 0.9612 | 0.9642 | 0.9235 | 0.9434 |
-| Linear SVM | **0.9897** | **0.9850** | **0.9857** | **0.9853** |
-| XGBoost | 0.9543 | 0.9543 | 0.9132 | 0.9333 |
-
-Linear SVM was selected independently for both levels because it had the
-highest validation F1. Its returned score is a signed decision score, not a
-probability. The document model is recommended when the application receives
-a complete essay because it uses the full context and performed much better on
-its held-out documents. Sentence and document metrics use different evaluation
-units, so they are not a direct like-for-like comparison.
+Both new training runs use reproducible, stratified 70/15/15
+train/validation/test partitions. Sentence rows are grouped by `doc_id`, so
+sentences from one essay cannot appear in different partitions. All three
+models use the same held-out test set, and model selection uses validation F1
+before the test set is evaluated.
 
 ## Setup
+
+Conda (recommended for the submitted README requirement):
+
+```bash
+conda create --name cos30049-a2 python=3.12 -y
+conda activate cos30049-a2
+python -m pip install -r requirements.txt
+```
+
+Alternatively, use a Python virtual environment:
 
 ```bash
 python -m venv .venv
@@ -80,10 +66,31 @@ Required columns:
 | label | 0 for human and 1 for AI |
 
 The supplied `source` and `prompt` columns are retained for tracing results but
-are not model inputs. TF-IDF unigrams/bigrams are combined with the numeric
-writing-style features. The loader verifies and repairs derived feature values
-from the text. TF-IDF and numeric scaling are fitted only on training data
-inside each saved pipeline.
+are not model inputs. TF-IDF unigrams/bigrams are combined with these 12
+numeric features: `char_count`, `word_count`, `avg_word_len`,
+`vocab_div_ratio`, `complex_word_ratio`, `stopword_ratio`,
+`upper_letter_ratio`, `semicolon_dash_count`, `char_entropy`, `rep_bigram`,
+`ai_tell_count`, and `doc_pos`. The loader verifies numeric data and recalculates
+average word length and document position. TF-IDF and numeric scaling are
+fitted only on training data inside each pipeline, preventing data leakage.
+
+### Regenerate the processed datasets
+
+Place these source files in `data/processed/`:
+
+- `train_v2_drcat_02.csv`
+- `HC3_en_train_data.csv`
+- `data_for_preprocessing.csv`
+
+Then run:
+
+```bash
+python data/processed/final_dataset.py
+python data/processed/para_dataset.py
+```
+
+This creates `final_dataset.csv` (one sentence per row) and `para_dataset.csv`
+(one complete source document per row). Do not combine these two outputs.
 
 ## Train and compare
 
@@ -108,8 +115,10 @@ python -m classification.train --unit document --dataset "Para dataset.zip" --zi
 
 All three models use the same split and feature representation within each
 experiment. Logistic Regression uses stochastic gradient descent with logistic
-loss because the sentence dataset has more than one million sparse text rows.
-XGBoost uses 80 histogram-based boosted trees without a large tuning search.
+loss because the sentence dataset contains over one million sparse text rows.
+Linear SVM probabilities are produced by valid three-fold sigmoid calibration;
+they are not invented from its decision score. XGBoost uses 80 histogram-based
+boosted trees without a large tuning search.
 
 Generated summary files and saved models:
 
@@ -145,9 +154,23 @@ sentence_result = predict_text("Text to classify goes here.")
 document_result = predict_text("Complete essay text goes here.", unit="document")
 ```
 
-The sentence model splits input into sentences and aggregates their scores.
-The document model represents the entire input as one sample. Both recreate
-the same features and load the saved fitted pipeline without retraining.
+The sentence model splits input into sentences and aggregates their AI-class
+probabilities. For multi-sentence input it also returns a reproducible 95%
+bootstrap range across sentence probabilities. This range describes variation
+between the submitted sentences; it is not a guarantee of real-world model
+certainty. The document model represents the entire input as one sample. Both
+recreate the same features and load the fitted pipeline without retraining.
+
+## Data analysis
+
+After generating `final_dataset.csv`, recreate the summary statistics and four
+visualisations with:
+
+```bash
+python visualisation/data_analysis/eda.py
+```
+
+Set `DATA_PATH` only when the sentence CSV is stored somewhere else.
 
 ## Tests
 
