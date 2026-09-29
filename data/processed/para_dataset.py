@@ -120,7 +120,8 @@ def document_features(text: str) -> dict:
     return {
         "char_count":           char_count,
         "word_count":           word_count,
-        "avg_word_len":         round(char_count / word_count, 2),
+        # Exclude spaces and punctuation from the mean word length.
+        "avg_word_len":         round(sum(len(w) for w in words) / word_count, 2),
         "vocab_div_ratio":      round(unique_words / word_count, 2),
         "complex_word_ratio":   round(long_words / word_count, 2),
         "stopword_ratio":       round(stopword_count / word_count, 2),
@@ -279,4 +280,3 @@ para_df.to_csv(OUTPUT_PATH, index=False)
 
 print(f"Total documents: {len(para_df)}")
 print(f"CSV saved")
-

@@ -7,7 +7,10 @@ import seaborn as sns
 # CONFIG 
 DATA_PATH = os.environ.get(
     "DATA_PATH",
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "final_dataset.csv")
+    os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "data", "processed", "final_dataset.csv",
+    )
 )
 OUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -155,4 +158,3 @@ print(f"  max:    {df['char_count'].max()}")
 
 
 print(f"\nAll outputs saved to: {OUT_DIR}/")
-

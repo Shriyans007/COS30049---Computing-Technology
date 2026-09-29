@@ -134,7 +134,8 @@ def sentence_features(sent: str, sent_id: int, total_sents: int) -> dict:
     return {
         "char_count":           char_count,
         "word_count":           word_count,
-        "avg_word_len":         round(char_count / word_count, 2),
+        # Exclude spaces and punctuation from the mean word length.
+        "avg_word_len":         round(sum(len(w) for w in words) / word_count, 2),
         "vocab_div_ratio":      round(unique_words / word_count, 2),
         "complex_word_ratio":   round(long_words / word_count, 2),
         "stopword_ratio":       round(stopword_count / word_count, 2),
@@ -143,7 +144,8 @@ def sentence_features(sent: str, sent_id: int, total_sents: int) -> dict:
         "char_entropy":         round(_char_entropy(sent), 3),
         "rep_bigram":           round(_repetition_ratio(lower_words, 2), 3),
         "ai_tell_count":        sum(1 for t in _AI_TELLS if t in sent.lower()),
-        "doc_pos":              round(sent_id / max(total_sents, 1), 2),
+        # A multi-sentence document now runs from 0.0 to 1.0 inclusive.
+        "doc_pos":              round(sent_id / max(total_sents - 1, 1), 2),
     }
 
 
@@ -293,5 +295,4 @@ sent_df.to_csv(OUTPUT_PATH, index=False)
 
 print(f"\nTotal sentences: {len(sent_df)}")
 print(f"\nCSV file saved")
-
 

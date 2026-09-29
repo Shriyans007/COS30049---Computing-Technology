@@ -11,7 +11,7 @@ Reads `final_dataset.csv`  from the
 
 ## Outputs
 
-Running `eda.py` writes into `visualisation/`:
+Running `eda.py` writes into `visualisation/data_analysis/`:
 
 - `summary_stats.csv` — mean/median/std per feature, split by label
 - `bar_chart.png` — class balance (human vs AI)
@@ -29,3 +29,8 @@ Running `eda.py` writes into `visualisation/`:
 - **Class separability** — box plots showing where human and AI distributions
   differ
 
+Run from the repository root after generating the processed sentence dataset:
+
+```bash
+python visualisation/data_analysis/eda.py
+```

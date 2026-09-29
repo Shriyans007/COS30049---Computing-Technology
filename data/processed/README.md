@@ -28,6 +28,14 @@ Train the document-level experiment with:
 python -m classification.train --unit document
 ```
 
+To regenerate the two processed CSVs from the three source datasets, place the
+source CSVs in this directory and run:
+
+```bash
+python data/processed/final_dataset.py
+python data/processed/para_dataset.py
+```
+
 The CSV is intentionally ignored by Git because it exceeds GitHub's file-size
 limit. This instruction file keeps the folder available after cloning or
 pulling the repository.
