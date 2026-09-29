@@ -55,6 +55,8 @@ def test_training_saving_loading_prediction_and_exports(tmp_path, small_dataset)
     assert (output_dir / "model_comparison.csv").is_file()
     assert (output_dir / "test_predictions.csv").is_file()
     assert (artifact_dir / "final_text_classifier.joblib").is_file()
+    level_comparison = pd.read_csv(tmp_path / "level_comparison.csv")
+    assert set(level_comparison["unit"]) == {"sentence"}
 
     prediction = predict_text(
         "I rewrote this sentence because the first version sounded strange. "
@@ -102,6 +104,8 @@ def test_document_level_training_and_prediction(tmp_path, small_dataset):
     )
     assert prediction["label"] in {"human", "ai"}
     assert len(prediction["sentence_results"]) == 1
+    level_comparison = pd.read_csv(tmp_path / "level_comparison.csv")
+    assert set(level_comparison["unit"]) == {"document"}
 
     metadata = json.loads((artifact_dir / "model_metadata.json").read_text(encoding="utf-8"))
     assert metadata["unit"] == "document"

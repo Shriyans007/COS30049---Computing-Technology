@@ -74,6 +74,16 @@ def run_training(config: TrainingConfig) -> dict[str, object]:
     test_metrics.to_csv(output_dir / "model_comparison.csv", index=False)
     test_predictions.to_csv(output_dir / "test_predictions.csv", index=False)
 
+    # Keep one compact file for report tables after both training commands run.
+    level_path = output_dir.parent / "level_comparison.csv"
+    level_metrics = test_metrics.assign(unit=config.unit)
+    if level_path.is_file():
+        previous = pd.read_csv(level_path)
+        if "unit" in previous.columns:
+            previous = previous.loc[previous["unit"] != config.unit]
+            level_metrics = pd.concat([previous, level_metrics], ignore_index=True)
+    level_metrics.to_csv(level_path, index=False)
+
     artifact_path = artifact_dir / "final_text_classifier.joblib"
     joblib.dump(models[selected_name], artifact_path)
     loaded_model = joblib.load(artifact_path)
