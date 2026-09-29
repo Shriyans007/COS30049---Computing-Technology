@@ -57,14 +57,20 @@ def test_training_saving_loading_prediction_and_exports(tmp_path, small_dataset)
     assert (artifact_dir / "final_text_classifier.joblib").is_file()
 
     prediction = predict_text(
-        "I rewrote this sentence because the first version sounded strange.",
+        "I rewrote this sentence because the first version sounded strange. "
+        "Then I asked a classmate to read it.",
         artifact_dir / "final_text_classifier.joblib",
     )
     assert prediction["label"] in {"human", "ai"}
-    assert prediction["score_type"] in {"ai_probability", "ai_decision_score"}
+    assert prediction["score_type"] == "ai_probability"
+    assert 0 <= prediction["score"] <= 1
+    assert prediction["confidence_range"] is not None
+    assert 0 <= prediction["confidence_range"]["lower"] <= 1
+    assert 0 <= prediction["confidence_range"]["upper"] <= 1
 
     metadata = json.loads((artifact_dir / "model_metadata.json").read_text(encoding="utf-8"))
     assert metadata["selection_rule"].startswith("highest validation F1")
+    assert "sigmoid calibration" in metadata["score_note"]
 
 
 def test_predict_rejects_empty_text(tmp_path):

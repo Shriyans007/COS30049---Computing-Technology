@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 
 import joblib
+import numpy as np
 
 from .data import LABEL_NAMES
 from .features import text_to_document_feature_frame, text_to_feature_frame
@@ -11,6 +12,20 @@ from .models import prediction_scores
 
 
 DEFAULT_MODEL_PATH = Path("artifacts/classification/final_text_classifier.joblib")
+
+
+def _bootstrap_confidence_range(scores: np.ndarray) -> dict[str, object] | None:
+    """Estimate a reproducible 95% interval around the mean sentence score."""
+    if len(scores) < 2 or not np.isfinite(scores).all():
+        return None
+    generator = np.random.default_rng(42)
+    samples = generator.choice(scores, size=(1_000, len(scores)), replace=True).mean(axis=1)
+    lower, upper = np.quantile(samples, [0.025, 0.975])
+    return {
+        "lower": float(lower),
+        "upper": float(upper),
+        "method": "95% bootstrap interval across sentence probabilities",
+    }
 
 
 def predict_text(
@@ -42,6 +57,11 @@ def predict_text(
     document_score = float(scores.mean())
     threshold = 0.5 if score_type == "ai_probability" else 0.0
     document_prediction = int(document_score >= threshold)
+    confidence_range = (
+        _bootstrap_confidence_range(scores)
+        if score_type == "ai_probability" and unit == "sentence"
+        else None
+    )
     sentence_results = [
         {
             "text": sentence,
@@ -56,6 +76,7 @@ def predict_text(
         "numeric_label": document_prediction,
         "score": document_score,
         "score_type": score_type,
+        "confidence_range": confidence_range,
         "sentence_results": sentence_results,
     }
 

@@ -55,8 +55,6 @@ def _read_csv(path: Path, zip_member: str | None) -> pd.DataFrame:
 def _add_or_repair_features(data: pd.DataFrame) -> pd.DataFrame:
     max_sent_id = data.groupby("doc_id")["sent_id"].transform("max")
     data["doc_pos"] = data["sent_id"] / max_sent_id.clip(lower=1)
-    data["is_first_sent"] = data["sent_id"].eq(0).astype(int)
-    data["is_last_sent"] = data["sent_id"].eq(max_sent_id).astype(int)
 
     missing_features = [name for name in NUMERIC_FEATURES if name not in data.columns]
     if missing_features:

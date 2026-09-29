@@ -91,7 +91,10 @@ def run_training(config: TrainingConfig) -> dict[str, object]:
             if config.unit == "sentence"
             else "full source document"
         ),
-        "score_note": "Linear SVM scores are decision scores, not probabilities.",
+        "score_note": (
+            "Scores are AI-class probabilities. Linear SVM probabilities use "
+            "three-fold sigmoid calibration fitted only on training data."
+        ),
         "class_mapping": {"0": "human", "1": "ai"},
         "numeric_features": NUMERIC_FEATURES,
         "dataset_audit": audit,

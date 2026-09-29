@@ -5,6 +5,7 @@ from collections.abc import Mapping, Sequence
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.impute import SimpleImputer
@@ -69,8 +70,16 @@ def build_models(
             class_weight="balanced",
             random_state=random_seed,
         ),
-        "linear_svm": LinearSVC(
-            class_weight="balanced", random_state=random_seed, max_iter=10_000, tol=1e-3
+        "linear_svm": CalibratedClassifierCV(
+            estimator=LinearSVC(
+                class_weight="balanced",
+                random_state=random_seed,
+                max_iter=10_000,
+                tol=1e-3,
+            ),
+            method="sigmoid",
+            cv=3,
+            n_jobs=4,
         ),
         "xgboost": XGBClassifier(
             n_estimators=xgboost_estimators,

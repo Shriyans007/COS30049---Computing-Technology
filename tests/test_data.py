@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from classification.data import load_dataset, split_dataset
+from classification.features import NUMERIC_FEATURES, sentence_features
 
 
 def test_load_dataset_normalises_supported_labels(tmp_path):
@@ -68,9 +69,25 @@ def test_load_dataset_keeps_document_sentences_together_and_repairs_features(tmp
     splits = split_dataset(data)
 
     assert data["avg_word_len"].max() < 20
-    assert set(data.loc[data["is_last_sent"] == 1, "sent_id"]) == {1}
+    assert set(data.loc[data["doc_pos"] == 1, "sent_id"]) == {1}
+    assert set(NUMERIC_FEATURES) == {
+        "char_count", "word_count", "avg_word_len", "vocab_div_ratio",
+        "complex_word_ratio", "stopword_ratio", "upper_letter_ratio",
+        "semicolon_dash_count", "char_entropy", "rep_bigram",
+        "ai_tell_count", "doc_pos",
+    }
     split_for_document = {}
     for name, frame in (("train", splits.train), ("validation", splits.validation), ("test", splits.test)):
         for document_id in frame["doc_id"].unique():
             assert document_id not in split_for_document
             split_for_document[document_id] = name
+
+
+def test_feature_formulas_match_processed_dataset_definition():
+    features = sentence_features("Moreover, repeat words repeat words; now.", 2, 3)
+
+    assert features["doc_pos"] == 1.0
+    assert features["semicolon_dash_count"] == 1
+    assert features["ai_tell_count"] == 1
+    assert features["rep_bigram"] > 0
+    assert features["char_entropy"] > 0
