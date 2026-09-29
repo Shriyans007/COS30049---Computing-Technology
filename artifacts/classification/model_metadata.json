@@ -1,11 +1,11 @@
 {
   "status": "trained_on_person_2_sentence_dataset",
   "unit": "sentence",
-  "selected_model": "linear_svm",
-  "selected_model_display": "Linear SVM",
+  "selected_model": "logistic_regression",
+  "selected_model_display": "Logistic Regression",
   "selection_rule": "highest validation F1, then validation accuracy",
   "evaluation_unit": "sentence, with document-grouped splitting",
-  "score_note": "Linear SVM scores are decision scores, not probabilities.",
+  "score_note": "Scores are AI-class probabilities. Linear SVM probabilities use three-fold sigmoid calibration fitted only on training data.",
   "class_mapping": {
     "0": "human",
     "1": "ai"
@@ -18,35 +18,35 @@
     "complex_word_ratio",
     "stopword_ratio",
     "upper_letter_ratio",
-    "numeric_digit_ratio",
     "semicolon_dash_count",
-    "doc_pos",
-    "is_first_sent",
-    "is_last_sent"
+    "char_entropy",
+    "rep_bigram",
+    "ai_tell_count",
+    "doc_pos"
   ],
   "dataset_audit": {
-    "original_rows": 1573082,
-    "original_documents": 122740,
+    "original_rows": 1409595,
+    "original_documents": 104981,
     "duplicate_documents_removed": 0,
-    "conflicting_sentence_rows_removed": 228291,
-    "duplicate_sentence_rows_removed": 81812,
-    "final_rows": 1262979,
-    "final_documents": 120069
+    "conflicting_sentence_rows_removed": 160078,
+    "duplicate_sentence_rows_removed": 72234,
+    "final_rows": 1177283,
+    "final_documents": 103658
   },
   "split_rows": {
-    "train": 883145,
-    "validation": 188962,
-    "test": 190872
+    "train": 823860,
+    "validation": 175209,
+    "test": 178214
   },
   "split_documents": {
-    "train": 84047,
-    "validation": 18011,
-    "test": 18011
+    "train": 72560,
+    "validation": 15549,
+    "test": 15549
   },
   "config": {
-    "dataset": "upload/final_dataset.csv.zip",
+    "dataset": "data/processed/final_dataset.csv",
     "unit": "sentence",
-    "zip_member": "final_dataset.csv",
+    "zip_member": null,
     "text_column": "text",
     "label_column": "label",
     "id_column": "id",
