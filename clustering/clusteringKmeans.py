@@ -8,10 +8,11 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.decomposition import PCA
 
+
 pd.set_option('display.max_columns', 120)
 pd.set_option('display.width', 160)
 
-DATASET = "C:/Users/lollo/Documents/School/Comp tech/Assignment2/final_dataset.csv"
+DATASET = "data/processed/final_dataset.csv"
 essays = pd.read_csv(DATASET)
 
 # print(essays.head(10))
@@ -90,7 +91,7 @@ ai_gen_essays = essays[essays['label'] == 1].copy()
 # ax2.set_ylabel('Silhouette Score', color='g')
 # ax2.tick_params(axis='y', labelcolor='g')
 
-# # Title and layout
+# # Title and Saved Plot :D
 # plt.title('Elbow Method vs. Silhouette Score')
 # save("Elbow_vs_Silhouette_V1.png")
 
@@ -131,24 +132,24 @@ X_V2_scaled = StandardScaler().fit_transform(X_V2)
 # ax2.set_ylabel('Silhouette Score', color='g')
 # ax2.tick_params(axis='y', labelcolor='g')
 
-# # Title and layout
+# # Title and Saved Plot :D
 # plt.title('Elbow Method vs. Silhouette Score')
 # save("Elbow_vs_Silhouette_V2.png")
 
 # | Test of k to check peak Silhouette score |
 
-# model = KMeans(n_clusters=6, random_state=42)
+# model = KMeans(n_clusters=5, random_state=42)
 # pred_labels = model.fit_predict(X_V2_scaled)
 # sil_score = silhouette_score(X_V2_scaled, pred_labels, sample_size=20000, random_state=42)
-# print("Silhouette Score:", sil_score) # Silhouette Score:  0.2592969154434338
+# print("Silhouette Score:", sil_score) # Silhouette Score: 0.2347677488470225
 
 # | Check validity of Clusters depending on K |
 # for k in [2, 5, 6]:
 #     test = KMeans(k, n_init=10, random_state=42).fit_predict(X_V2_scaled)
 #     print(f"\n k={k}", np.bincount(test))    
-#  k=2 [268752 207317]
-#  k=5 [ 41407 220837  40695  23443 149687]
-#  k=6 [ 40593 217096  40585  29473 146015   2307]
+#  k=2 [267412 208657]
+#  k=5 [216066  41991 151827  40675  25510]
+#  k=6 [ 40561 147707 214512   2315  40341  30633]
 
 # | Cluster Plot & Cluster Descirptions |
 
@@ -164,7 +165,9 @@ for c in sorted(ai_gen_essays.cluster.unique()):
     print(" less:", z.nsmallest(2).round(2).to_dict())
     
 P = PCA(n_components=2, random_state=42).fit_transform(X_V2_scaled)
-plt.scatter(P[:, 0], P[:, 1], c=labels, s=8, cmap="viridis")
+scatter = plt.scatter(P[:, 0], P[:, 1], c=labels, s=8, cmap="viridis")
+handles, cluster_labels = scatter.legend_elements()
+plt.legend(handles=handles, labels=cluster_labels, title= "Cluster #")
 plt.title('Clustering of AI Generated Class')
 save("Cluster_Plot.png")
 
@@ -177,5 +180,3 @@ for c in sorted(ai_gen_essays.cluster.unique()):
     for e in examples:
         print("-", e)
         
-
-# | Check Clusters after being ctaegorized against their prompt/source |
