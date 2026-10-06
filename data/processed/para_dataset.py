@@ -185,7 +185,7 @@ for path in EXTRA_PATHS:
 
     rename_map = {}
     for col in extra.columns:
-        low = str(col).strip().lstrip("\ufeff").lower()
+        low = str(col).strip().lower()
         if low in ("text", "content", "abstract", "essay", "body"):
             rename_map[col] = "text"
         elif low in ("author", "label", "target", "class", "is_ai",
