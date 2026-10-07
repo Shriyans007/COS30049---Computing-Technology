@@ -144,6 +144,7 @@ X_V2_scaled = StandardScaler().fit_transform(X_V2)
 # print("Silhouette Score:", sil_score) # Silhouette Score: 0.2347677488470225
 
 # | Check validity of Clusters depending on K |
+
 # for k in [2, 5, 6]:
 #     test = KMeans(k, n_init=10, random_state=42).fit_predict(X_V2_scaled)
 #     print(f"\n k={k}", np.bincount(test))    

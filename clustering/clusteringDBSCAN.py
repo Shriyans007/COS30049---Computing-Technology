@@ -44,6 +44,8 @@ X_V2 = ai_gen_essays[FEATURES_V2]
 
 X_V2_scaled = StandardScaler().fit_transform(X_V2)
 
+# | Nearest Neighbour K Distance Plot |
+
 # nearneigh = NearestNeighbors(n_neighbors=16).fit(X_V2_scaled) # neighbours = 16 as 8 Features x 2 
 # distance, _ = nearneigh.kneighbors(X_V2_scaled)
 
@@ -120,19 +122,19 @@ save("DBSCAN_Cluster_Plot.png")
 
 # | Sentence Examples From Each Cluster |
 
-# for c in sorted(sample_set.dbscan_cluster.unique()):
-#     g = sample_set[sample_set.dbscan_cluster == c]
-#     label = "NOISE" if c == -1 else f"cluster {c}" # decide whether actual cluster or noise
-#     print(f"\n {label} Examples:")
-#     examples = sample_set[sample_set.dbscan_cluster == c]['text'].sample(min(5, len(g)), random_state=42)
-#     for e in examples:
-#         print("-", e)
+for c in sorted(sample_set.dbscan_cluster.unique()):
+    g = sample_set[sample_set.dbscan_cluster == c]
+    label = "NOISE" if c == -1 else f"cluster {c}" # decide whether actual cluster or noise
+    print(f"\n {label} Examples:")
+    examples = sample_set[sample_set.dbscan_cluster == c]['text'].sample(min(5, len(g)), random_state=42)
+    for e in examples:
+        print("-", e)
 
 # | Silhouette Score For DBSCAN |
 
-# no_noise = db != -1
-# sil_score = silhouette_score(X_Sample[no_noise], db[no_noise], sample_size=20000, random_state=42)
-# print(f"Silhouette Score (No Noise): {sil_score:.3f}") # Silhouette Score (No Noise): 0.201
+no_noise = db != -1
+sil_score = silhouette_score(X_Sample[no_noise], db[no_noise], sample_size=20000, random_state=42)
+print(f"Silhouette Score (No Noise): {sil_score:.3f}") # Silhouette Score (No Noise): 0.201
 
-# sil_score = silhouette_score(X_Sample, db, sample_size=20000, random_state=42)
-# print(f"Silhouette Score (Noise): {sil_score:.3f}") # Silhouette Score (Noise): 0.188
+sil_score = silhouette_score(X_Sample, db, sample_size=20000, random_state=42)
+print(f"Silhouette Score (Noise): {sil_score:.3f}") # Silhouette Score (Noise): 0.188

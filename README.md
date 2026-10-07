@@ -161,6 +161,21 @@ between the submitted sentences; it is not a guarantee of real-world model
 certainty. The document model represents the entire input as one sample. Both
 recreate the same features and load the fitted pipeline without retraining.
 
+## Clustering Models 
+If needed, after generating 'final_dataset_csv', to refit/re-create either clustering models visiualizations or results please run: 
+
+```bash
+python clustering/clusteringKmeans.py
+```
+
+OR
+
+```bash
+python clustering/clusteringDBSCAN.py
+```
+
+To recreate tests for KMeans K value or DBSCAN's epsilon value, please uncomment the sections beneath labelled as such. (e.g | Elbow Method vs Silhouette Score to find K | or  | Nearest Neighbour K Distance Plot |). 
+
 ## Data analysis
 
 After generating `final_dataset.csv`, recreate the summary statistics and four
