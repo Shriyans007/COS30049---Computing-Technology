@@ -3,6 +3,137 @@
 Assignment 2 machine-learning code for classifying human-written and
 AI-generated text. The frontend is intentionally out of scope.
 
+## Assignment 3 secure backend
+
+The `backend/` folder adds the Person 1 Assignment 3 contribution: a FastAPI
+service around the two Assignment 2 classifiers, bounded inference capacity,
+safe validation/errors, and reproducible denial-of-service and detection-evasion
+experiments. The React interface is developed separately against the contract
+below.
+
+### Request path
+
+```text
+React -> POST /api/v1/predict -> validation -> security normalisation
+      -> bounded inference gate -> document + sentence pipelines -> JSON result
+```
+
+The document classifier supplies the overall Human/AI result. The sentence
+classifier supplies each sentence's probability. Both were fitted during
+Assignment 2 and are loaded once during FastAPI startup; the API never retrains
+them.
+
+### Windows PowerShell setup
+
+Python 3.12 is recommended. From the repository root:
+
+```powershell
+py -3.12 -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+& ".\.venv\Scripts\Activate.ps1"
+python -m pip install -r backend\requirements.txt
+Copy-Item backend\.env.example .env
+python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+```
+
+Open `http://127.0.0.1:8000/docs` for the generated API documentation. The
+production/demo command intentionally omits `--reload`.
+
+### Frontend API contract
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/v1/predict` | Validate and classify one text |
+| `GET` | `/api/v1/health` | Lightweight availability check |
+| `GET` | `/api/v1/model-info` | Model names, class mapping and limits |
+
+Request:
+
+```json
+{"text": "Paste at least 20 characters of plain text here."}
+```
+
+Successful response:
+
+```json
+{
+  "prediction": "ai",
+  "ai_probability": 0.91,
+  "confidence": 0.91,
+  "confidence_range": {
+    "lower": 0.84,
+    "upper": 0.96,
+    "method": "95% bootstrap interval across sentence AI probabilities"
+  },
+  "sentence_results": [
+    {"text": "Example sentence.", "label": "ai", "ai_probability": 0.93}
+  ],
+  "normalisation_applied": false
+}
+```
+
+`ai_probability` always means probability of class 1 (AI). `confidence` means
+the probability assigned to the returned class. The confidence range is only
+returned for multi-sentence input and measures variation across sentence
+probabilities; it is not a guarantee of real-world accuracy.
+
+All errors use the same safe structure:
+
+```json
+{"error": {"code": "TEXT_TOO_LARGE", "message": "Text must not exceed the configured limits."}}
+```
+
+The default limits are 20–10,000 characters, 40,000 UTF-8 bytes and 100
+sentences. Relevant failures use `400`, `413`, `415`, `422`, `429`, `503` or
+`500`; internal paths and stack traces are logged server-side only.
+
+### Security design
+
+The API applies NFKC, removes zero-width/unsafe format characters, normalises
+whitespace and maps a deliberately small set of Latin-looking Cyrillic/Greek
+characters before inference. Original text remains in the JSON sentence display
+and React must render it as text, never HTML.
+
+Model calls run in worker threads, outside the asynchronous event loop. A
+semaphore permits two simultaneous inferences and a bounded wait rejects excess
+work with `503`, leaving the health route responsive. Timeouts bound how long a
+caller waits, although Python cannot forcibly stop a worker thread already
+running. Character, byte and sentence limits prevent small requests expanding
+into disproportionate work. A separate high per-client request limit returns
+`429`; this supports general hygiene but is not the marked DoS mechanism.
+
+CORS accepts only the exact origins in `A3_ALLOWED_ORIGINS`; wildcard origins
+are rejected at startup. The backend performs no user-controlled outbound
+requests, database queries, file uploads or shell commands, so SSRF, SQL
+injection, unsafe upload and command injection are not exposed by this design.
+
+### Tests and experiments
+
+```powershell
+python -m pytest -q
+python -m backend.experiments.detection_evasion
+python -m backend.experiments.dos_experiment --requests 20
+```
+
+The detection-evasion script tests four variants against a fixed set, then
+repeats the same measurements after normalisation. The DoS script sends real
+concurrent HTTP requests to controlled baseline and protected localhost servers.
+Raw CSV rows and JSON summaries are saved under
+`backend/experiments/results/`. Results depend on the committed model and local
+hardware and must be regenerated rather than quoted without running them.
+
+The committed run produced 48 variants from 12 eligible AI examples. Evasion
+was 47.92% before normalisation and 0% afterwards on this fixed set; none of
+eight clean controls changed class. In the 20-request localhost overload run,
+the baseline accepted all 20 requests, while protected mode completed two and
+rejected 18 with `503`. The health endpoint returned `200` during both runs.
+
+The fixed evasion corpus is intentionally small and is not evidence of model
+accuracy. The confusable mapping is incomplete; making it aggressive would
+damage legitimate multilingual writing. The DoS experiment uses an explicit
+local-only delay for reproducible cost and does not claim to simulate a network
+level distributed attack.
+
 ## Current status
 
 Person 2 supplied sentence- and document-level representations of the combined
