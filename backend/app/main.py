@@ -64,7 +64,13 @@ def create_app() -> FastAPI:
             length = request.headers.get("content-length")
             if length and length.isdigit() and int(length) > settings.max_bytes + 1_000:
                 return JSONResponse(error_payload("REQUEST_TOO_LARGE", "The request body is too large."), status_code=413)
-        return await call_next(request)
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+        return response
+    
 
     install_error_handlers(app)
     app.include_router(health_router, prefix="/api/v1")
