@@ -45,6 +45,7 @@ def create_app() -> FastAPI:
         version="1.0.0",
         description="Secure API around the team's Assignment 2 AI-content classifiers.",
         lifespan=lifespan,
+        debug=False,
     )
     app.add_middleware(
         CORSMiddleware,
