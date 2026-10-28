@@ -184,6 +184,10 @@ a, p, h5 {
 }
 
 /* Input */
+#detection-input {
+    width: 100%;
+    max-width: 500px ;
+}
 
 
 

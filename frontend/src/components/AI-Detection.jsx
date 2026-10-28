@@ -1,4 +1,6 @@
 import { useState } from "react";
+import SearchIcon from "@mui/icons-material/SearchRounded"
+import { TextField, Button, CircularProgress, Alert, Box } from "@mui/material";
 
 export default function AIDetection() {
   const [text, setText] = useState("");
@@ -13,21 +15,48 @@ export default function AIDetection() {
       <div id="ai-detection">
         <h2>Drop your text in.</h2>
       </div>
+<Box sx={{
+    bgcolor: '#FFFF',
+    borderRadius: "1rem",
+    p: 2.5,
+    width: "100%",
+    maxWidth: 500,
 
+}} >
       {/* AI Detection Input */}
-      <form id="detection-input" onSubmit={handleSubmit}>
+      <Box component={"form"} id="detection-input" onSubmit={handleSubmit}>
         <div className="input-internal">
-          <textarea
+          <TextField
             id="text-input"
-            rows={6}
+            multiline
+            minRows={8}
+            fullWidth
+            variant="filled"
+            slotProps={{ input: { disableUnderline: true } }}
             placeholder="Input Text here..."
             value={text}
             onChange={(e) => setText(e.target.value)}
+            sx={{
+                "& .MuiFilledInput-root": {
+                bgcolor: "#fabeb43a",
+                borderRadius: "1rem",
+                overflow: "hidden",
+                p: 2,
+                fontSize: "1rem",
+                fontWeight: "normal",
+                color: "#110f0c",
+                }
+
+            }}
           />
         </div>
-        <button type="submit">Analyze</button>
-      </form>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2, }}>
+          
+        <Button type="submit" variant="contained" color="error" sx={{textTransform: "none",}}>  <SearchIcon></SearchIcon>Analyze</Button>
+         </Box>
 
+      </Box>
+      </Box>
       {/* AI Detection Output */}
     </div>
   );
