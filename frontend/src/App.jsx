@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Home from "./pages/Home.jsx";
 import Help from "./pages/Help.jsx";
+import ErrorPage from "./pages/ErrorPage.jsx"
 
 export default function App() {
   return (
@@ -10,6 +11,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/help" element={<Help />} />
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </>
   );
