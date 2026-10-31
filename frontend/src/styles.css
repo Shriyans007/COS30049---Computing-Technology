@@ -189,6 +189,15 @@ a, p, h5 {
     max-width: 500px ;
 }
 
+#wordcount{
+    color: #84A59D;
+    font-weight: 500;
+    font-family: 'Plus Jakarta Sans';
+    font-size: 0.8rem;
+    padding-top: 2%;
+
+}
+
 
 
 /* Output */
