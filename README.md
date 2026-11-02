@@ -107,6 +107,40 @@ are rejected at startup. The backend performs no user-controlled outbound
 requests, database queries, file uploads or shell commands, so SSRF, SQL
 injection, unsafe upload and command injection are not exposed by this design.
 
+## Threat Model
+
+**1. Who would want to attack your application?**
+There are two primary attackers. First, an adversary attempting to bypass the system, such as someone trying to pass off AI-generated text as human-written. Second, a malicious actor or automated bot seeking to disrupt the service or find infrastructure flaws.
+
+**2. What are they trying to achieve?**
+The evasion attacker wants to manipulate text using look-alike Unicode characters or zero-width spaces so it appears normal to a human but is misclassified by the model. The disruptive attacker wants to crash the service by flooding the API with expensive inference requests, or probe the system for missing security headers.
+
+**3. What can they actually do to it?**
+Attackers bypass the React frontend and interact directly with the FastAPI backend using tools like `curl`. They can send crafted text payloads, send high volumes of concurrent requests to exhaust server resources, and probe HTTP responses.
+
+**Risk Analysis:**
+Our architecture is a stateless text-processing API with no database or user accounts. This design exposes us to specific risks while rendering others irrelevant.
+*   **Risks that do NOT apply:** SQL Injection, Command Injection, Unsafe File Upload, SSRF, and Broken Access Control.
+*   **Risks that DO apply:** Denial of Service, Misconfiguration, and Detection Evasion.
+
+## Selected Defences
+
+### Defence 1: Advanced Denial of Service (DoS) Protection
+
+
+### Defence 2: Intermediate Misconfiguration and Vulnerable Dependency Protection
+**Configuration and Secrets:** Secrets and configurations are kept strictly out of source code using `pydantic-settings` and a local `.env` file. Debug mode is explicitly disabled to prevent stack trace leaks. We implemented a custom middleware that injects standard security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Strict-Transport-Security`) into every HTTP response.
+
+**Dependency Audits (Fix or Justify):** We ran `pip-audit` and initially found 32 vulnerabilities. We upgraded `fastapi` to `0.122.0`, `starlette` to `0.49.3`, and `pip` to `26.2.2`. We proved these upgrades did not break the app by running the `pytest` suite (**23 tests passed**). 
+*   *Justified risk:* `pip-audit` flags `pytest 8.3.4`. We accepted this risk because `pytest` is dev-only and not present in production. Upgrading breaks our async testing plugin.
+
+**Malicious Request Testing (curl):** We bypassed the frontend and attacked the API directly:
+*   **CORS Attack:** We sent an `OPTIONS` request with a malicious `Origin` header (`https://group8.attack`). The server returned `400 Bad Request` and `Disallowed CORS origin`.
+*   **Payload Overflow:** We sent a 20,000-character payload to `/api/v1/predict`. The server safely rejected it with `413 Request Entity Too Large` and a clean JSON error, with no stack traces leaked.
+*   **Header Inspection:** `curl -I` confirmed that `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff` are present on all responses.
+
+**API Documentation (`/docs`):** We verified that the FastAPI auto-generated Swagger UI (`/docs`) provides full endpoint descriptions, summaries, and error response models. Pydantic models include `json_schema_extra` for pre-filled example requests and responses.
+
 ### Tests and experiments
 
 ```powershell
