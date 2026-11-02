@@ -141,6 +141,15 @@ Our architecture is a stateless text-processing API with no database or user acc
 
 **API Documentation (`/docs`):** We verified that the FastAPI auto-generated Swagger UI (`/docs`) provides full endpoint descriptions, summaries, and error response models. Pydantic models include `json_schema_extra` for pre-filled example requests and responses.
 
+## Generative AI Statement
+
+Generative AI tools were used strictly for learning, brainstorming, and debugging during this assignment. 
+
+
+All core application logic, security configurations (including the implementation of security headers, CORS policies, and dependency pinning), and React visualisations were written, understood, and verified by the team members.
+
+We take full responsibility for the code, the security defences, and the documentation implemented in this repository.
+
 ### Tests and experiments
 
 ```powershell
