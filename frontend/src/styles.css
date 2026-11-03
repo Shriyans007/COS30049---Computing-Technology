@@ -62,7 +62,8 @@ a, p, h5 {
 /* Banner slogan/hook */
 .banner {
     background-color: #F7EDE2;
-    padding-top: 4rem
+    padding-top: 4rem;
+    width: 100%;
 }
 
 .banner h1 {
