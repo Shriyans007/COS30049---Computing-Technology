@@ -1,0 +1,27 @@
+{
+  "source_note": "Fixed, original evaluation examples written for the A3 security experiment. They are not training data and are not used to claim model accuracy.",
+  "ai_samples": [
+    "Furthermore, this comprehensive analysis highlights the multifaceted benefits of artificial intelligence in modern education, providing a robust framework for personalised learning and improved student outcomes.",
+    "In conclusion, the implementation demonstrates a seamless and efficient approach that can facilitate informed decision-making while addressing the complex requirements of contemporary organisations.",
+    "It is important to note that sustainable development requires a holistic strategy encompassing environmental protection, economic growth, and meaningful community participation.",
+    "Moreover, the ever-evolving digital landscape underscores the crucial role of cybersecurity awareness in protecting sensitive information from increasingly sophisticated threats.",
+    "This comprehensive overview delves into the pivotal factors shaping remote work, including communication, productivity, employee wellbeing, and organisational culture.",
+    "The proposed solution leverages a robust methodology to identify patterns, evaluate relevant evidence, and generate nuanced insights for stakeholders.",
+    "Additionally, effective leadership can foster a vibrant workplace by encouraging collaboration, facilitating professional growth, and recognising diverse perspectives.",
+    "In essence, renewable energy represents a transformative opportunity to reduce emissions, strengthen energy security, and build a more sustainable future.",
+    "The intricate relationship between technology and society requires a multifaceted analysis that considers accessibility, privacy, fairness, and long-term consequences.",
+    "Consequently, organisations should adopt a comprehensive risk-management framework that combines preventative controls, continuous monitoring, and clear incident-response procedures.",
+    "Overall, the evidence demonstrates that a balanced and systematic approach can unlock meaningful improvements while mitigating foreseeable limitations.",
+    "Navigating the world of artificial intelligence requires a nuanced understanding of its potential benefits, ethical concerns, and rapidly evolving technical capabilities."
+  ],
+  "clean_controls": [
+    "I started this paragraph after class, but I changed the opening because it sounded too formal.",
+    "We met at the library on Tuesday and compared our notes before finishing the worksheet.",
+    "My first attempt did not work, so I went back through the example and found the missing step.",
+    "I think the graph is easier to understand when the two results are placed next to each other.",
+    "The bus was late this morning, which gave me a bit more time to read over my draft.",
+    "I asked my group what they thought and then rewrote the last section using their feedback.",
+    "This is the method I used in the lab, although another group completed the final step differently.",
+    "I was unsure about the answer at first, but the result made sense after I checked the units."
+  ]
+}

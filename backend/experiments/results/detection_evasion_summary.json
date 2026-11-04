@@ -1,0 +1,15 @@
+{
+  "model": "final_text_classifier.joblib",
+  "fixed_ai_samples": 12,
+  "eligible_original_ai_samples": 12,
+  "attacked_variants": 48,
+  "evasion_success_rate_before_defence": 0.4791666666666667,
+  "evasion_success_rate_after_defence": 0.0,
+  "average_confidence_change_before_defence": -0.46795240129788995,
+  "average_confidence_change_after_defence": 0.0,
+  "clean_control_count": 8,
+  "clean_control_prediction_changes": 0,
+  "clean_control_change_rate": 0.0,
+  "remaining_evasions": 0,
+  "limitations": "The fixed set is small and authored for a security demonstration. The limited mapping does not cover every Unicode confusable and may alter legitimate multilingual text."
+}

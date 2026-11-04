@@ -1,0 +1,35 @@
+{
+  "method": "Concurrent HTTP POST requests against the real FastAPI endpoint",
+  "baseline": {
+    "mode": "baseline",
+    "total_requests": 20,
+    "status_counts": {
+      "200": 20
+    },
+    "successful_requests": 20,
+    "rejected_requests": 0,
+    "mean_response_ms": 723.13605,
+    "median_response_ms": 631.481,
+    "maximum_response_ms": 950.121,
+    "health_status_during_load": 200,
+    "health_response_ms_during_load": 2.387466999607568,
+    "controlled_cost_note": "A 250 ms local experiment-only delay makes inference cost repeatable."
+  },
+  "protected": {
+    "mode": "protected",
+    "total_requests": 20,
+    "status_counts": {
+      "200": 2,
+      "503": 18
+    },
+    "successful_requests": 2,
+    "rejected_requests": 18,
+    "mean_response_ms": 85.5418,
+    "median_response_ms": 60.9105,
+    "maximum_response_ms": 317.602,
+    "health_status_during_load": 200,
+    "health_response_ms_during_load": 2.6655619999473856,
+    "controlled_cost_note": "A 250 ms local experiment-only delay makes inference cost repeatable."
+  },
+  "interpretation": "Baseline accepts all concurrent inference work. Protected mode bounds work and rejects excess requests with HTTP 503 while the lightweight health route remains responsive."
+}
