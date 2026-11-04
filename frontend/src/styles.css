@@ -5,7 +5,9 @@
 }
 
 /* base text */
-a, p, h5 {
+a,
+p,
+h5 {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 100%;
 }
@@ -173,7 +175,7 @@ a, p, h5 {
     padding: 0.5em 1rem;
     border-radius: 5em;
     font-size: 0.7rem;
-    font-weight: bold;  
+    font-weight: bold;
 }
 
 #ai-detection {
@@ -187,10 +189,10 @@ a, p, h5 {
 /* Input */
 #detection-input {
     width: 100%;
-    max-width: 500px ;
+    max-width: 500px;
 }
 
-#wordcount{
+#wordcount {
     color: #84A59D;
     font-weight: 500;
     font-family: 'Plus Jakarta Sans';
@@ -202,3 +204,38 @@ a, p, h5 {
 
 
 /* Output */
+.card-output {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#progress-percent {
+    color: #84A59D;
+}
+
+/* Sentence by sentence output */
+.sentence-by-sentence {
+    margin-top: 1.5rem;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    width: 100%;
+    max-width: 1024px;
+}
+
+
+/* Session History */
+.Session-History {
+    background-color: #84A59D;
+    gap: 2; 
+    padding: 5%;
+}
+
+
+/* Responsive */
+@media (max-width: 600px) {
+    .AI-Detection {
+        padding: 1.5rem 1rem;
+    }
+}
