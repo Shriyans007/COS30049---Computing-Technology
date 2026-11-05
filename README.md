@@ -384,6 +384,41 @@ This demonstrates application-level overload control on one machine, not protect
 
 Actual dependency audit before remediation found 10 Python advisory entries in Starlette 0.49.3 and 6 npm vulnerable packages (1 critical, 5 moderate). FastAPI/Starlette and the affected frontend development tools were changed to compatible fixed versions. Re-running both audits found zero known vulnerabilities. Commands and the exact interpretation are in `security-evidence/README.md`.
 
+#### OWASP ZAP dynamic scan
+
+A team member ran the earlier OWASP ZAP scan against the live local React frontend (`http://localhost:5173`) and FastAPI Swagger interface (`http://127.0.0.1:8000/docs`).
+
+- **Earlier backend findings:** the documentation endpoint was reported as missing a Content Security Policy and using cross-domain Swagger JavaScript/CSS resources. The API routes were already protected by the security-header middleware. The documentation response was subsequently given a restricted CSP and its external resources were pinned to an explicitly permitted jsDelivr version.
+- **Earlier frontend findings:** the Vite development server produced anti-clickjacking and Subresource Integrity findings. These related to Vite's local hot-reload server rather than the compiled production files. A production deployment must serve `frontend/dist` through a configured web server that supplies deployment-level headers.
+
+A follow-up backend scan was run on 5 November 2026 after the documentation hardening. ZAP completed with **0 high, 2 medium, 1 low and 1 informational alert**:
+
+| Risk | Follow-up finding | Interpretation |
+| --- | --- | --- |
+| High | None | No high-risk alert was reported |
+| Medium | CSP `style-src unsafe-inline` | Swagger uses inline presentation styles; inline JavaScript remains blocked |
+| Medium | Subresource Integrity attribute missing | Two pinned Swagger CDN resources did not include SRI attributes |
+| Low | Cross-domain JavaScript inclusion | Swagger loads its pinned bundle from the CSP-allow-listed jsDelivr origin |
+| Informational | Modern web application | Technology classification, not an exploit |
+
+A separate clean frontend follow-up scan was completed on 6 November 2026 against only `http://localhost:5173`. It completed with **0 high, 3 medium, 1 low and 2 informational alert categories**:
+
+| Risk | Frontend finding | Instances | Interpretation |
+| --- | --- | ---: | --- |
+| High | None | 0 | No high-risk alert was reported |
+| Medium | Content Security Policy header not set | 3 | Vite's local development server does not add a deployment CSP |
+| Medium | Anti-clickjacking header missing | 3 | The development server does not add framing protection |
+| Medium | Subresource Integrity attribute missing | 3 | Development HTML/resources do not use SRI metadata |
+| Low | `X-Content-Type-Options` header missing | Systemic | The development server does not add `nosniff` |
+| Informational | Suspicious comments | 1 category | Passive source-code heuristic requiring manual review |
+| Informational | Modern web application | 3 | Technology classification, not an exploit |
+
+These frontend results reproduce the categories in the earlier team scan. They describe the Vite hot-reload server used for local marking, not FastAPI or the prediction model. A deployed build must be served by a production web server with CSP, anti-clickjacking and MIME-sniffing headers.
+
+The earlier scan is retained as baseline evidence and the follow-up demonstrates that a CSP is now present. The remaining findings are documented as residual documentation-interface and CDN supply-chain risks; they do not prove compromise of the prediction API. The raw alert categories and interpretation are recorded under `security-evidence/`.
+
+The ZAP findings, dependency audits and direct malicious-request tests are interpreted together. Development-server findings are not presented as vulnerabilities in the model API.
+
 ## Section 2.8 detection evasion
 
 ```powershell

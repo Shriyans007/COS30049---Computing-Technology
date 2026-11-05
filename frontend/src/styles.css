@@ -11,6 +11,7 @@ html {
 body {
     min-width: 320px;
     background: #F7EDE2;
+    font-family: "Segoe UI", Arial, sans-serif;
 }
 
 :focus-visible {
@@ -22,7 +23,7 @@ body {
 a,
 p,
 h5 {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
     font-size: 100%;
 }
 
@@ -60,7 +61,7 @@ h5 {
     gap: 2%;
     text-decoration: none;
     color: #38291A;
-    font-family: 'Fraunces';
+    font-family: Georgia, "Times New Roman", serif;
     font-weight: bold;
 }
 
@@ -88,7 +89,7 @@ h5 {
     justify-content: center;
     text-align: center;
     font-size: clamp(2.25rem, 9vw, 6rem);
-    font-family: 'Fraunces';
+    font-family: Georgia, "Times New Roman", serif;
     color: #8A5A00;
     font-weight: 900;
 }
@@ -161,7 +162,7 @@ h5 {
 }
 
 .bubblebold {
-    font-family: 'Fraunces';
+    font-family: Georgia, "Times New Roman", serif;
     font-weight: 900;
     font-size: 1.5em;
 }
@@ -199,7 +200,7 @@ h5 {
 #ai-detection {
     padding: 1.5em;
     color: #3B2A1A;
-    font-family: 'Fraunces';
+    font-family: Georgia, "Times New Roman", serif;
     font-size: 1.25em;
     font-weight: 900;
 }
@@ -213,7 +214,7 @@ h5 {
 #text-guidance {
     color: #3B2A1A;
     font-weight: 500;
-    font-family: 'Plus Jakarta Sans';
+    font-family: "Segoe UI", Arial, sans-serif;
     font-size: 0.8rem;
     padding-top: 2%;
 
@@ -338,7 +339,7 @@ h5 {
 
 .error-page h1,
 .fallback-page h1 {
-    font-family: 'Fraunces', serif;
+    font-family: Georgia, "Times New Roman", serif;
     font-size: clamp(2rem, 8vw, 4rem);
 }
 
