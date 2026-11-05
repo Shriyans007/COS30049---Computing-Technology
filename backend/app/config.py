@@ -1,10 +1,12 @@
 """Environment-backed API configuration."""
 
+import json
 from functools import lru_cache
 from pathlib import Path
+from typing import Annotated
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -17,7 +19,7 @@ class Settings(BaseSettings):
 
     app_name: str = "AI Content Detector API"
     environment: str = "development"
-    allowed_origins: list[str] = Field(
+    allowed_origins: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["http://localhost:5173", "http://127.0.0.1:5173"]
     )
     sentence_model_path: Path = REPOSITORY_ROOT / "artifacts/classification/final_text_classifier.joblib"
@@ -38,8 +40,11 @@ class Settings(BaseSettings):
     @field_validator("allowed_origins", mode="before")
     @classmethod
     def parse_origins(cls, value: object) -> object:
-        if isinstance(value, str) and not value.lstrip().startswith("["):
-            return [item.strip() for item in value.split(",") if item.strip()]
+        if isinstance(value, str):
+            raw_value = value.strip()
+            if raw_value.startswith("["):
+                return json.loads(raw_value)
+            return [item.strip() for item in raw_value.split(",") if item.strip()]
         return value
 
     def validate_security(self) -> None:
