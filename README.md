@@ -1,59 +1,116 @@
-# COS30049 AI-Generated Content Detection
+# AI-Generated Content Detection
 
-Assignment 2 machine-learning code for classifying human-written and
-AI-generated text. The frontend is intentionally out of scope.
+COS30049 Assignment 3 secure full-stack application. The application helps students and educators inspect whether text resembles the AI-generated writing learned by our Assignment 2 classifiers. It is an indicator, not proof of authorship or academic misconduct.
 
-## Assignment 3 secure backend
+## What is submitted
 
-The `backend/` folder adds the Person 1 Assignment 3 contribution: a FastAPI
-service around the two Assignment 2 classifiers, bounded inference capacity,
-safe validation/errors, and reproducible denial-of-service and detection-evasion
-experiments. The React interface is developed separately against the contract
-below.
+- React and Vite single-page interface with input validation, visible loading/success/error states, a 404 page and an unexpected-error fallback.
+- Two interactive result views: filterable sentence likelihood highlighting and selectable session comparison bars.
+- FastAPI API connected to the trained Assignment 2 sentence and document pipelines.
+- Advanced application-level denial-of-service protection and a controlled before/after load experiment.
+- Repeated detection-evasion attack and defensive Unicode normalisation experiment.
+- Intermediate configuration and dependency protection with reproducible audit evidence.
 
-### Request path
+## Architecture and request flow
 
-```text
-React -> POST /api/v1/predict -> validation -> security normalisation
-      -> bounded inference gate -> document + sentence pipelines -> JSON result
+```mermaid
+flowchart TD
+    U["User enters plain text"] --> F["React validates limits"]
+    F -->|"POST /api/v1/predict JSON"| A["FastAPI validates and normalises"]
+    A --> G["Bounded inference gate"]
+    G --> M["Document and sentence pipelines"]
+    M -->|"Probabilities and labels"| A
+    A -->|"Typed JSON response"| F
+    F --> V["Result card and visualisations"]
 ```
 
-The document classifier supplies the overall Human/AI result. The sentence
-classifier supplies each sentence's probability. Both were fitted during
-Assignment 2 and are loaded once during FastAPI startup; the API never retrains
-them.
+A real request follows this path:
 
-### Windows PowerShell setup
+1. `frontend/src/components/AI-Detection.jsx` checks the same character, byte and sentence limits as the API.
+2. `frontend/src/components/detectAPI.jsx` sends `{ "text": "..." }` to `POST /api/v1/predict` and translates the shared error object into a readable message.
+3. `backend/app/main.py` rejects unsupported content types and excessive request bodies before JSON parsing. Pydantic validates the request shape.
+4. `backend/app/validation.py` enforces content limits. `backend/app/normalisation.py` creates a security-normalised inference copy while preserving the submitted text for display.
+5. `backend/app/security.py` bounds concurrent model work and runs it outside the async event loop. `backend/app/model_service.py` applies the same Assignment 2 feature functions used during training.
+6. The document pipeline returns the overall AI probability. The sentence pipeline is applied to each sentence and returns sentence probabilities.
+7. Pydantic validates the response before React renders the result. All expected and unexpected API errors use the same safe JSON structure from `backend/app/errors.py`.
 
-Python 3.12 is recommended. From the repository root:
+Both fitted pipelines load once in the FastAPI lifespan. Missing or incompatible models stop startup rather than serving fabricated results.
+
+## Repository map
+
+```text
+backend/                    FastAPI service, tests and security experiments
+  app/                      Routes, models, validation, normalisation and controls
+  experiments/data/         Fixed local security test data
+  experiments/results/      CSV rows and JSON summaries from actual runs
+  tests/                    API, overload, failure and normalisation tests
+frontend/                   React/Vite interface and component/API tests
+artifacts/                  Fitted sentence and document Joblib pipelines
+classification/             Assignment 2 features, training and prediction code
+clustering/                 Assignment 2 clustering work
+visualisation/              Assignment 2 analysis work
+security-evidence/          Dependency audit record and interpretation
+```
+
+## Clean Windows PowerShell setup
+
+Required versions: Python 3.12 and Node.js 22 or newer. All application dependency versions are pinned. From the repository root:
 
 ```powershell
 py -3.12 -m venv .venv
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 & ".\.venv\Scripts\Activate.ps1"
-python -m pip install -r backend\requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r backend\requirements-dev.txt
 Copy-Item backend\.env.example .env
+
+Set-Location frontend
+npm ci
+Copy-Item .env.example .env
+Set-Location ..
+```
+
+The production-only backend dependencies are in `backend/requirements.txt`. `backend/requirements-dev.txt` adds the experiment and test clients. The root `requirements.txt` additionally installs the Assignment 2 plotting packages.
+
+### Run the application
+
+Open two PowerShell terminals from the repository root and activate the same Python environment in the backend terminal.
+
+Backend:
+
+```powershell
+& ".\.venv\Scripts\Activate.ps1"
 python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Open `http://127.0.0.1:8000/docs` for the generated API documentation. The
-production/demo command intentionally omits `--reload`.
+Frontend:
 
-### Frontend API contract
+```powershell
+Set-Location frontend
+npm run dev -- --host 127.0.0.1
+```
 
-| Method | Route | Purpose |
-| --- | --- | --- |
-| `POST` | `/api/v1/predict` | Validate and classify one text |
-| `GET` | `/api/v1/health` | Lightweight availability check |
-| `GET` | `/api/v1/model-info` | Model names, class mapping and limits |
+Open `http://127.0.0.1:5173`. Interactive API documentation is at `http://127.0.0.1:8000/docs` and the OpenAPI JSON is at `/openapi.json`.
+
+The default origins are exactly `http://localhost:5173` and `http://127.0.0.1:5173`. For another frontend origin, update both `.env` files; do not use a wildcard.
+
+## API contract
+
+| Method | Endpoint | Genuine purpose | Success |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/predict` | Validate, normalise and classify text | `200` |
+| `GET` | `/api/v1/health` | Lightweight readiness check that does not wait for inference | `200` |
+| `GET` | `/api/v1/model-info` | Public model names, limits and normalisation steps | `200` |
 
 Request:
 
 ```json
-{"text": "Paste at least 20 characters of plain text here."}
+{
+  "text": "Furthermore, this explanation demonstrates how structured writing can be analysed."
+}
 ```
 
-Successful response:
+Response fields are identical for Human and AI results:
 
 ```json
 {
@@ -66,329 +123,220 @@ Successful response:
     "method": "95% bootstrap interval across sentence AI probabilities"
   },
   "sentence_results": [
-    {"text": "Example sentence.", "label": "ai", "ai_probability": 0.93}
+    {
+      "text": "Example sentence.",
+      "label": "ai",
+      "ai_probability": 0.93
+    }
   ],
   "normalisation_applied": false
 }
 ```
 
-`ai_probability` always means probability of class 1 (AI). `confidence` means
-the probability assigned to the returned class. The confidence range is only
-returned for multi-sentence input and measures variation across sentence
-probabilities; it is not a guarantee of real-world accuracy.
+- `ai_probability` is the calibrated probability of class `1` (AI), including when the returned label is `human`.
+- `confidence` is the probability assigned to the returned class.
+- `confidence_range` is `null` for a single sentence. For multiple sentences it describes variation across sentence scores, not guaranteed real-world accuracy.
+- Sentence results use the sentence model on each sentence because the overall document model produces only one document score.
+- `normalisation_applied` tells the interface that the model received a defended copy. The original characters remain available for safe text-node display.
 
-All errors use the same safe structure:
+Every error has one structure:
 
 ```json
-{"error": {"code": "TEXT_TOO_LARGE", "message": "Text must not exceed the configured limits."}}
+{
+  "error": {
+    "code": "TEXT_TOO_LARGE",
+    "message": "Text must not exceed 10,000 characters."
+  }
+}
 ```
 
-The default limits are 20–10,000 characters, 40,000 UTF-8 bytes and 100
-sentences. Relevant failures use `400`, `413`, `415`, `422`, `429`, `503` or
-`500`; internal paths and stack traces are logged server-side only.
+The API uses `400` for unsafe/empty content, `413` for size or sentence limits, `415` for a non-JSON prediction request, `422` for malformed JSON or shape errors, `429` for the additional rate limit, `503` for bounded-capacity rejection/timeouts and `500` for unexpected failures. Stack traces, model paths and exception details are never returned.
 
-### Security design
+### Input limits
 
-The API applies NFKC, removes zero-width/unsafe format characters, normalises
-whitespace and maps a deliberately small set of Latin-looking Cyrillic/Greek
-characters before inference. Original text remains in the JSON sentence display
-and React must render it as text, never HTML.
+| Limit | Default | Why |
+| --- | ---: | --- |
+| Minimum text | 20 characters | Avoid meaningless model input |
+| Maximum text | 10,000 characters | Bound feature extraction and inference work |
+| UTF-8 body text | 40,000 bytes | Bound multi-byte input before inference |
+| Sentence count | 100 | Bound repeated sentence-model calls |
+| Concurrent inference | 2 | Preserve service capacity |
+| Queue wait | 0.05 seconds | Reject overload promptly with `503` |
+| Inference timeout | 15 seconds | Bound the caller's wait |
 
-Model calls run in worker threads, outside the asynchronous event loop. A
-semaphore permits two simultaneous inferences and a bounded wait rejects excess
-work with `503`, leaving the health route responsive. Timeouts bound how long a
-caller waits, although Python cannot forcibly stop a worker thread already
-running. Character, byte and sentence limits prevent small requests expanding
-into disproportionate work. A separate high per-client request limit returns
-`429`; this supports general hygiene but is not the marked DoS mechanism.
+## Model integration
 
-CORS accepts only the exact origins in `A3_ALLOWED_ORIGINS`; wildcard origins
-are rejected at startup. The backend performs no user-controlled outbound
-requests, database queries, file uploads or shell commands, so SSRF, SQL
-injection, unsafe upload and command injection are not exposed by this design.
+The committed models are:
 
-## Threat Model
+- `artifacts/classification/final_text_classifier.joblib` — sentence classifier.
+- `artifacts/document_classification/final_text_classifier.joblib` — document classifier.
 
-**1. Who would want to attack your application?**
-There are two primary attackers. First, an adversary attempting to bypass the system, such as someone trying to pass off AI-generated text as human-written. Second, a malicious actor or automated bot seeking to disrupt the service or find infrastructure flaws.
+`classification/features.py` is shared by training and runtime, so TF-IDF and the engineered numeric feature frame match the fitted pipelines. Both artifacts expose `predict_proba`; the API refuses startup if calibrated probabilities are unavailable. It never converts a raw SVM decision score into a probability.
 
-**2. What are they trying to achieve?**
-The evasion attacker wants to manipulate text using look-alike Unicode characters or zero-width spaces so it appears normal to a human but is misclassified by the model. The disruptive attacker wants to crash the service by flooding the API with expensive inference requests, or probe the system for missing security headers.
+The application does not retrain on startup. To reproduce Assignment 2 training when the uncommitted source datasets are available:
 
-**3. What can they actually do to it?**
-Attackers bypass the React frontend and interact directly with the FastAPI backend using tools like `curl`. They can send crafted text payloads, send high volumes of concurrent requests to exhaust server resources, and probe HTTP responses.
+```powershell
+python -m classification.train --dataset data\processed\final_dataset.csv
+python -m classification.train --unit document --dataset data\processed\para_dataset.csv
+```
 
-**Risk Analysis:**
-Our architecture is a stateless text-processing API with no database or user accounts. This design exposes us to specific risks while rendering others irrelevant.
-*   **Risks that do NOT apply:** SQL Injection, Command Injection, Unsafe File Upload, SSRF, and Broken Access Control.
-*   **Risks that DO apply:** Denial of Service, Misconfiguration, and Detection Evasion.
+The large source CSVs are intentionally excluded from Git. They are not required to run the submitted application because the fitted artifacts are committed.
 
-## Selected Defences
+## Threat model
 
-### Defence 1: Advanced Denial of Service (DoS) Protection
+### Who may attack it?
+
+An evasion attacker may want AI text labelled Human. A disruptive user or bot may try to occupy model capacity. A scanner may probe unsafe defaults, exposed errors or vulnerable dependencies. They can bypass React and send arbitrary HTTP requests directly to FastAPI.
+
+### What do they want?
+
+- Change tokenisation while leaving text visually similar, lowering the AI score.
+- Exhaust CPU/inference capacity so legitimate requests and health checks stall.
+- Learn internal paths or implementation details from failures.
+- Exploit permissive origins, missing browser protections or vulnerable packages.
+
+### What can they actually reach?
+
+They can control one bounded plain-text JSON field, request timing/concurrency, headers and origin. There are no accounts, database queries, file uploads, user-selected URLs, HTML interpretation or command execution. Therefore denial of service, detection evasion, misconfiguration and dependency risk apply. SQL injection, broken access control, unsafe upload, SSRF and command injection are not exposed by this design.
+
+The React application renders submitted content through React text nodes and never uses `dangerouslySetInnerHTML`.
+
+## Section 2.7 defences nominated for marking
+
+### 1. Advanced denial-of-service protection
+
+Before inference, the API bounds JSON body size, characters, UTF-8 bytes and sentence count using linear-time processing. Inference runs in worker threads rather than the async event loop. A semaphore allows two model calls and a 50 ms bounded queue; excess work receives `503`. The independent health route does no inference and stays responsive. A high per-client sliding-window rate limit is only an extra safeguard, not the nominated mechanism.
+
+The local experiment uses the real HTTP endpoint and a controlled 250 ms experiment-only model delay. Production configuration cannot disable the protection or add a delay unless explicit local experiment mode is enabled.
 
 ```powershell
 python -m backend.experiments.dos_experiment --requests 20
 ```
 
-The script starts two temporary localhost servers and sends simultaneous HTTP requests to the real prediction route. The baseline accepts unbounded inference work. Protected mode uses the production semaphore and short bounded queue, returning `503` for excess work. A 250 ms experiment-only delay makes model cost repeatable on different computers. Production refuses artificial delays and refuses disabled DoS protection unless explicit experiment mode is enabled.
+Actual committed run on 5 November 2026:
 
-The comparison represents application-level resource exhaustion on one computer, not a distributed denial-of-service test.
+| Measurement | Baseline | Protected |
+| --- | ---: | ---: |
+| Total concurrent requests | 20 | 20 |
+| HTTP `200` | 20 | 2 |
+| HTTP `503` | 0 | 18 |
+| Mean response time | 1366.45 ms | 119.25 ms |
+| Median response time | 1436.54 ms | 88.53 ms |
+| Maximum response time | 1588.61 ms | 396.31 ms |
+| Health during load | `200`, 23.49 ms | `200`, 39.07 ms |
 
+This demonstrates application-level overload control on one machine, not protection against a network-level distributed attack. A timed-out Python worker cannot be forcibly killed; input bounds and the semaphore prevent unbounded accumulation.
 
+### 2. Intermediate secure configuration and dependency management
 
-### Defence 2: Intermediate Misconfiguration and Vulnerable Dependency Protection
-**Configuration and Secrets:** Secrets and configurations are kept strictly out of source code using `pydantic-settings` and a local `.env` file. Debug mode is explicitly disabled to prevent stack trace leaks. We implemented a custom middleware that injects standard security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Strict-Transport-Security`) into every HTTP response.
+- `debug=False`; unexpected exceptions are logged server-side and returned as a generic shared error.
+- Exact CORS origins come from environment settings; startup rejects `*`.
+- A placeholder-only `.env.example` is committed and local `.env` files are ignored.
+- CSP, frame, MIME-sniffing, referrer, permissions and HSTS headers are added to normal and early-error responses.
+- Direct malicious-request tests cover untrusted CORS preflight, oversized bodies, bad content type and error leakage.
+- Python and npm versions are exact. Tests run after dependency changes.
 
-**Dependency Audits (Fix or Justify):** We ran `pip-audit` and initially found 32 vulnerabilities. We upgraded `fastapi` to `0.122.0`, `starlette` to `0.49.3`, and `pip` to `26.2.2`. We proved these upgrades did not break the app by running the `pytest` suite (**23 tests passed**). 
-*   *Justified risk:* `pip-audit` flags `pytest 8.3.4`. We accepted this risk because `pytest` is dev-only and not present in production. Upgrading breaks our async testing plugin.
+Actual dependency audit before remediation found 10 Python advisory entries in Starlette 0.49.3 and 6 npm vulnerable packages (1 critical, 5 moderate). FastAPI/Starlette and the affected frontend development tools were changed to compatible fixed versions. Re-running both audits found zero known vulnerabilities. Commands and the exact interpretation are in `security-evidence/README.md`.
 
-**Malicious Request Testing (curl):** We bypassed the frontend and attacked the API directly:
-*   **CORS Attack:** We sent an `OPTIONS` request with a malicious `Origin` header (`https://group8.attack`). The server returned `400 Bad Request` and `Disallowed CORS origin`.
-*   **Payload Overflow:** We sent a 20,000-character payload to `/api/v1/predict`. The server safely rejected it with `413 Request Entity Too Large` and a clean JSON error, with no stack traces leaked.
-*   **Header Inspection:** `curl -I` confirmed that `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff` are present on all responses.
-
-**API Documentation (`/docs`):** We verified that the FastAPI auto-generated Swagger UI (`/docs`) provides full endpoint descriptions, summaries, and error response models. Pydantic models include `json_schema_extra` for pre-filled example requests and responses.
-
-
-## Advanced attack
-
-## Detection evasion
+## Section 2.8 detection evasion
 
 ```powershell
 python -m backend.experiments.detection_evasion
 ```
 
-The script first keeps only fixed examples that the original document model correctly labels AI. It creates four attack variants per eligible example, measures the undefended predictions, applies the submitted normaliser, and repeats the same measurements. The JSON summary and per-variant CSV are written to `backend/experiments/results/`.
+The fixed, original test set contains 12 AI examples correctly detected before attack. Four meaning-preserving variants are made per eligible example: look-alike Cyrillic/Greek characters, zero-width characters, compatibility characters and unusual whitespace. The same 48 variants are measured first without defence and then with the submitted normaliser.
 
-The examples are a small, original security test set rather than evidence of model accuracy. The limited confusable mapping reduces common attacks but does not cover the complete Unicode confusables standard. Expanding it would increase the risk of changing legitimate multilingual writing.
+The defence applies Unicode NFKC, removes zero-width/unsafe control characters, normalises unusual whitespace, and maps only a documented set of Latin-looking confusables. It passes only the copy to the model and preserves the original text for display.
 
-## Generative AI Statement
+| Measurement | Result |
+| --- | ---: |
+| Fixed AI examples | 12 |
+| Eligible correctly detected AI examples | 12 |
+| Attacked variants | 48 |
+| Evasion success before defence | 47.92% |
+| Evasion success after defence | 0.00% |
+| Average confidence change before defence | -0.4680 |
+| Average confidence change after defence | 0.0000 |
+| Clean controls | 8 |
+| Clean control labels changed | 0 (0%) |
+| Remaining evasions in this fixed set | 0 |
 
-Generative AI tools were used strictly for learning, brainstorming, and debugging during this assignment. 
+These figures are evidence for this small fixed security set, not general model accuracy. The limited map cannot cover every Unicode confusable. A larger map may reduce more attacks but risks corrupting legitimate multilingual writing. The before/after CSV and JSON summary are committed under `backend/experiments/results/`.
 
+## Tests and verification
 
-All core application logic, security configurations (including the implementation of security headers, CORS policies, and dependency pinning), and React visualisations were written, understood, and verified by the team members.
-
-We take full responsibility for the code, the security defences, and the documentation implemented in this repository.
-
-### Tests and experiments
+From the repository root with the environment active:
 
 ```powershell
 python -m pytest -q
-python -m backend.experiments.detection_evasion
-python -m backend.experiments.dos_experiment --requests 20
+python -m compileall -q backend\app backend\experiments
+
+Set-Location frontend
+npm run test:run
+npm run lint
+npm run build
+npm audit
+Set-Location ..
+
+python -m pip_audit -r backend\requirements.txt
 ```
 
-The detection-evasion script tests four variants against a fixed set, then
-repeats the same measurements after normalisation. The DoS script sends real
-concurrent HTTP requests to controlled baseline and protected localhost servers.
-Raw CSV rows and JSON summaries are saved under
-`backend/experiments/results/`. Results depend on the committed model and local
-hardware and must be regenerated rather than quoted without running them.
+Final verified results:
 
-The committed run produced 48 variants from 12 eligible AI examples. Evasion
-was 47.92% before normalisation and 0% afterwards on this fixed set; none of
-eight clean controls changed class. In the 20-request localhost overload run,
-the baseline accepted all 20 requests, while protected mode completed two and
-rejected 18 with `503`. The health endpoint returned `200` during both runs.
+- Backend: 25 tests passed (one upstream TestClient deprecation warning).
+- Frontend: 10 tests passed across 4 files.
+- ESLint: passed with no errors.
+- Vite production build: passed (one non-blocking 500 kB chunk-size warning).
+- `npm audit`: 0 vulnerabilities.
+- `pip-audit`: no known vulnerabilities.
 
-The fixed evasion corpus is intentionally small and is not evidence of model
-accuracy. The confusable mapping is incomplete; making it aggressive would
-damage legitimate multilingual writing. The DoS experiment uses an explicit
-local-only delay for reproducible cost and does not claim to simulate a network
-level distributed attack.
+Tests cover endpoints, Human/AI schemas, malformed and malicious input, safe failures, startup failure, Unicode normalisation, concurrent inference, overload `503`, responsive health checks, evasion calculations, frontend validation, API errors, loading/results, visualisation interaction and fallback pages.
 
-## Current status
+## Frontend configuration
 
-Person 2 supplied sentence- and document-level representations of the combined
-three-source dataset. The preprocessing and classification code is complete,
-but the models must be retrained after the corrected feature formulas are used.
-The model files and metric CSVs currently committed in the repository are from
-an earlier dataset version and must not be quoted as final Assignment 2 results.
+`frontend/.env.example` contains the only frontend setting:
 
-Both new training runs use reproducible, stratified 70/15/15
-train/validation/test partitions. Sentence rows are grouped by `doc_id`, so
-sentences from one essay cannot appear in different partitions. All three
-models use the same held-out test set, and model selection uses validation F1
-before the test set is evaluated.
-
-## Setup
-
-Conda (recommended for the submitted README requirement):
-
-```bash
-conda create --name cos30049-a2 python=3.12 -y
-conda activate cos30049-a2
-python -m pip install -r requirements.txt
+```text
+VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-Alternatively, use a Python virtual environment:
+Person 2 can change that base URL for deployment while keeping the `/api/v1` routes unchanged. The backend origin list must be updated to the exact deployed frontend origin.
 
-```bash
-python -m venv .venv
-```
+## Known limitations and next steps
 
-Windows PowerShell:
+- AI detection can produce false positives and false negatives; users should treat the score as supporting information only.
+- The fixed evasion corpus is intentionally small and the confusable mapping trades attack coverage against multilingual integrity.
+- Sentence display uses the same pipeline per sentence; it is not a separate explanation model.
+- Session history exists only in browser memory and disappears on refresh. Text is not sent to a database or stored by the server.
+- The Vite bundle is approximately 537 kB minified because Material UI is bundled together. Route/component code splitting is a future performance improvement.
+- Before public deployment, terminate TLS at a production proxy, set the exact production origins, add infrastructure-level request/body limits and repeat the security scans in that environment.
+
+## Generative AI use statement
+
+Generative AI tools were used for brainstorming, code review, debugging suggestions and documentation editing. Team members inspected, adapted, tested and take responsibility for every submitted change and result. No model result, experiment measurement, test result or source was invented. This statement should be updated with any additional use required by the unit's declaration process before final submission.
+
+## References
+
+FastAPI (2026) *FastAPI documentation*. Available at: https://fastapi.tiangolo.com/ (Accessed: 5 November 2026).
+
+OWASP Foundation (2021) *OWASP Top 10: A05 Security Misconfiguration*. Available at: https://owasp.org/Top10/A05_2021-Security_Misconfiguration/ (Accessed: 5 November 2026).
+
+OWASP Foundation (2023) *Cross Origin Resource Sharing*. Available at: https://owasp.org/www-community/attacks/CORS_OriginHeaderScrutiny (Accessed: 5 November 2026).
+
+Python Packaging Authority (2026) *pip-audit*. Available at: https://github.com/pypa/pip-audit (Accessed: 5 November 2026).
+
+scikit-learn developers (2026) *Pipeline*. Available at: https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html (Accessed: 5 November 2026).
+
+Unicode Consortium (2025) *Unicode Standard Annex #15: Unicode Normalization Forms*. Available at: https://unicode.org/reports/tr15/ (Accessed: 5 November 2026).
+
+## Assignment 2 supporting commands
+
+The previous modelling, clustering and exploratory analysis remain in the repository. Their source datasets are not required for Assignment 3 runtime. With the local processed CSVs present, useful reproduction commands are:
 
 ```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-```
-
-macOS/Linux:
-
-```bash
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-```
-
-## Dataset
-
-The CSVs are not committed because they exceed GitHub's file-size limit.
-Recommended local paths are:
-
-- `data/processed/final_dataset.csv` for sentence rows
-- `data/processed/para_dataset.csv` for complete documents
-
-Required columns:
-
-| Column | Purpose |
-| --- | --- |
-| doc_id | Original document identifier used for grouped splitting |
-| sent_id | Sentence order; it may be 0 for every document-level row |
-| text | Sentence text or complete document text |
-| label | 0 for human and 1 for AI |
-
-The supplied `source` and `prompt` columns are retained for tracing results but
-are not model inputs. TF-IDF unigrams/bigrams are combined with these 12
-numeric features: `char_count`, `word_count`, `avg_word_len`,
-`vocab_div_ratio`, `complex_word_ratio`, `stopword_ratio`,
-`upper_letter_ratio`, `semicolon_dash_count`, `char_entropy`, `rep_bigram`,
-`ai_tell_count`, and `doc_pos`. The loader verifies numeric data and recalculates
-average word length and document position. TF-IDF and numeric scaling are
-fitted only on training data inside each pipeline, preventing data leakage.
-
-### Regenerate the processed datasets
-
-Place these source files in `data/processed/`:
-
-- `train_v2_drcat_02.csv`
-- `HC3_en_train_data.csv`
-- `data_for_preprocessing.csv`
-
-Then run:
-
-```bash
-python data/processed/final_dataset.py
-python data/processed/para_dataset.py
-```
-
-This creates `final_dataset.csv` (one sentence per row) and `para_dataset.csv`
-(one complete source document per row). Do not combine these two outputs.
-
-## Train and compare
-
-Sentence model from a CSV:
-
-```bash
-python -m classification.train --dataset data/processed/final_dataset.csv
-```
-
-Document model from a CSV:
-
-```bash
-python -m classification.train --unit document --dataset data/processed/para_dataset.csv
-```
-
-The supplied ZIPs can also be used without extracting them:
-
-```bash
-python -m classification.train --dataset "final_dataset.csv.zip" --zip-member "final_dataset.csv"
-python -m classification.train --unit document --dataset "Para dataset.zip" --zip-member "Para dataset/para_dataset.csv"
-```
-
-All three models use the same split and feature representation within each
-experiment. Logistic Regression uses stochastic gradient descent with logistic
-loss because the sentence dataset contains over one million sparse text rows.
-Linear SVM probabilities are produced by valid three-fold sigmoid calibration;
-they are not invented from its decision score. XGBoost uses 80 histogram-based
-boosted trees without a large tuning search.
-
-Generated summary files and saved models:
-
-- `outputs/classification/` for sentence results
-- `artifacts/classification/` for the selected sentence model
-- `outputs/document_classification/` for document results
-- `artifacts/document_classification/` for the selected document model
-- `outputs/level_comparison.csv` for both test-result tables
-
-The full `test_predictions.csv` in each output directory is generated locally
-and excluded from Git because it is large. It contains sample ID, document ID,
-sentence ID, source, prompt, text, true label, predicted label, model and score
-for Person 3.
-
-## Predict without retraining
-
-Sentence model:
-
-```bash
 python -m classification.predict "Text to classify goes here."
+python -m classification.predict --unit document "A complete document goes here."
+python clustering\clusteringKmeans.py
+python clustering\clusteringDBSCAN.py
+python visualisation\data_analysis\eda.py
 ```
-
-Document model for a complete essay:
-
-```bash
-python -m classification.predict --unit document "Complete essay text goes here."
-```
-
-```python
-from classification import predict_text
-
-sentence_result = predict_text("Text to classify goes here.")
-document_result = predict_text("Complete essay text goes here.", unit="document")
-```
-
-The sentence model splits input into sentences and aggregates their AI-class
-probabilities. For multi-sentence input it also returns a reproducible 95%
-bootstrap range across sentence probabilities. This range describes variation
-between the submitted sentences; it is not a guarantee of real-world model
-certainty. The document model represents the entire input as one sample. Both
-recreate the same features and load the fitted pipeline without retraining.
-
-## Clustering Models 
-If needed, after generating 'final_dataset_csv', to refit/re-create either clustering models visiualizations or results please run: 
-
-```bash
-python clustering/clusteringKmeans.py
-```
-
-OR
-
-```bash
-python clustering/clusteringDBSCAN.py
-```
-
-To recreate tests for KMeans K value or DBSCAN's epsilon value, please uncomment the sections beneath labelled as such. (e.g | Elbow Method vs Silhouette Score to find K | or  | Nearest Neighbour K Distance Plot |). 
-
-## Data analysis
-
-After generating `final_dataset.csv`, recreate the summary statistics and four
-visualisations with:
-
-```bash
-python visualisation/data_analysis/eda.py
-```
-
-Set `DATA_PATH` only when the sentence CSV is stored somewhere else.
-
-## Tests
-
-```bash
-python -m pytest -q
-```
-
-The test fixtures verify loading, grouped splitting, all three models, metrics,
-exports, model saving/reloading, and standalone sentence/document prediction.
-Fixture metrics are not assignment results.

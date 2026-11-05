@@ -5,7 +5,7 @@ const theme = createTheme({
     primary: { main: "#F6BD60", contrastText: "#3B2A1A" },
     secondary: { main: "#84A59D", contrastText: "#3B2A1A" },
     error: { main: "#F28482", contrastText: "#3B2A1A" },
-    text: { primary: "#3B2A1A", secondary: "#F7EDE2" },
+    text: { primary: "#3B2A1A", secondary: "#654A32" },
     background: { default: "#F7EDE2", paper: "#FFFFFF" },
   },
   typography: {

@@ -19,6 +19,15 @@ def test_health_and_model_info(client):
     assert info.json()["limits"]["maximum_characters"] == 10_000
 
 
+def test_interactive_docs_remain_usable_with_restricted_csp(client):
+    response = client.get("/docs")
+    assert response.status_code == 200
+    assert "SwaggerUIBundle" in response.text
+    policy = response.headers["content-security-policy"]
+    assert "https://cdn.jsdelivr.net" in policy
+    assert "frame-ancestors 'none'" in policy
+
+
 def test_prediction_contract_and_real_probabilities(client, valid_text):
     response = client.post("/api/v1/predict", json={"text": valid_text})
     assert response.status_code == 200
@@ -85,7 +94,22 @@ def test_cors_allows_configured_origin_and_not_unapproved_origin(client):
         "/api/v1/predict",
         headers={"Origin": "https://attacker.example", "Access-Control-Request-Method": "POST"},
     )
+    assert denied.status_code == 400
+    assert denied.json()["error"]["code"] == "CORS_ORIGIN_DENIED"
     assert "access-control-allow-origin" not in denied.headers
+
+
+def test_security_headers_are_present_on_success_and_early_error(client):
+    responses = [
+        client.get("/api/v1/health"),
+        client.post("/api/v1/predict", content="plain", headers={"Content-Type": "text/plain"}),
+    ]
+    for response in responses:
+        assert response.headers["x-content-type-options"] == "nosniff"
+        assert response.headers["x-frame-options"] == "DENY"
+        assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
+        assert response.headers["referrer-policy"] == "no-referrer"
+        assert "camera=()" in response.headers["permissions-policy"]
 
 
 def test_rate_limit_endpoint_returns_consistent_429(monkeypatch, valid_text):

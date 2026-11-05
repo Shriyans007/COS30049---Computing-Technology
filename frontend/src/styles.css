@@ -4,6 +4,20 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-width: 320px;
+    background: #F7EDE2;
+}
+
+:focus-visible {
+    outline: 3px solid #3B2A1A;
+    outline-offset: 3px;
+}
+
 /* base text */
 a,
 p,
@@ -65,7 +79,7 @@ h5 {
 /* Banner slogan/hook */
 .banner {
     background-color: #F7EDE2;
-    padding-top: 4rem 1rem 0;
+    padding: 4rem 1rem 0;
     width: 100%;
 }
 
@@ -75,16 +89,16 @@ h5 {
     text-align: center;
     font-size: clamp(2.25rem, 9vw, 6rem);
     font-family: 'Fraunces';
-    color: #F4B349;
+    color: #8A5A00;
     font-weight: 900;
 }
 
 #instantly {
-    color: #5F8279;
+    color: #496A63;
 }
 
 .banner .italic-words {
-    color: #ED5552;
+    color: #B93937;
 }
 
 .banner p {
@@ -184,7 +198,7 @@ h5 {
 
 #ai-detection {
     padding: 1.5em;
-    color: #584028;
+    color: #3B2A1A;
     font-family: 'Fraunces';
     font-size: 1.25em;
     font-weight: 900;
@@ -195,7 +209,8 @@ h5 {
     width: 100%;
 }
 
-#wordcount {
+#wordcount,
+#text-guidance {
     color: #3B2A1A;
     font-weight: 500;
     font-family: 'Plus Jakarta Sans';
@@ -300,11 +315,48 @@ h5 {
 /* Session History */
 .Session-History {
     gap: 1rem;
-    max-width: 1024;
+    max-width: 1024px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+.error-page,
+.fallback-page {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    text-align: center;
+    color: #3B2A1A;
+    background: #F7EDE2;
+}
+
+.error-page h1,
+.fallback-page h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2rem, 8vw, 4rem);
+}
+
+.error-code {
+    color: #755637;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.fallback-button {
+    display: inline-flex;
+    padding: 0.85rem 1.4rem;
+    border-radius: 999px;
+    background: #F6BD60;
+    color: #3B2A1A;
+    font-weight: 700;
+    text-decoration: none;
 }
 
 
@@ -367,5 +419,19 @@ h5 {
     from {
         opacity: 0;
         transform: translateY(15px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

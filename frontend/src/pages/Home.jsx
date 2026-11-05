@@ -13,6 +13,11 @@ export default function Home() {
     setLatestResult(data);
   }
 
+  function clearSession() {
+    setSessionHistory([]);
+    setLatestResult(null);
+  }
+
   return (
     <>
       <Banner />
@@ -26,7 +31,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        <SessionHistory history={sessionHistory} />
+        <SessionHistory history={sessionHistory} onClear={clearSession} />
       </div>
     </>
   );

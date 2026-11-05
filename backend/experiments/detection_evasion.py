@@ -114,7 +114,11 @@ def run_experiment(data_path: Path, output_dir: Path, model_path: Path) -> dict[
     output_dir.mkdir(parents=True, exist_ok=True)
     csv_path = output_dir / "detection_evasion_results.csv"
     with csv_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]) if rows else ["sample"])
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=list(rows[0]) if rows else ["sample"],
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(rows)
     (output_dir / "detection_evasion_summary.json").write_text(
