@@ -155,24 +155,6 @@ The comparison represents application-level resource exhaustion on one computer,
 
 ## Detection evasion
 
-```powershell
-python -m backend.experiments.detection_evasion
-```
-
-The script first keeps only fixed examples that the original document model correctly labels AI. It creates four attack variants per eligible example, measures the undefended predictions, applies the submitted normaliser, and repeats the same measurements. The JSON summary and per-variant CSV are written to `backend/experiments/results/`.
-
-The examples are a small, original security test set rather than evidence of model accuracy. The limited confusable mapping reduces common attacks but does not cover the complete Unicode confusables standard. Expanding it would increase the risk of changing legitimate multilingual writing.
-
-## Generative AI Statement
-
-Generative AI tools were used strictly for learning, brainstorming, and debugging during this assignment. 
-
-
-All core application logic, security configurations (including the implementation of security headers, CORS policies, and dependency pinning), and React visualisations were written, understood, and verified by the team members.
-
-We take full responsibility for the code, the security defences, and the documentation implemented in this repository.
-
-### Tests and experiments
 
 ```powershell
 python -m pytest -q
@@ -198,6 +180,19 @@ accuracy. The confusable mapping is incomplete; making it aggressive would
 damage legitimate multilingual writing. The DoS experiment uses an explicit
 local-only delay for reproducible cost and does not claim to simulate a network
 level distributed attack.
+
+
+## Generative AI Statement
+
+Generative AI tools were used strictly for learning, brainstorming, and debugging during this assignment. 
+
+
+All core application logic, security configurations (including the implementation of security headers, CORS policies, and dependency pinning), and React visualisations were written, understood, and verified by the team members.
+
+We take full responsibility for the code, the security defences, and the documentation implemented in this repository.
+
+
+
 
 ## Current status
 
