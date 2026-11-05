@@ -1,0 +1,371 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* base text */
+a,
+p,
+h5 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 100%;
+}
+
+/* navbar */
+.navbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    padding: 1%;
+    width: 100%;
+    background-color: #84A59D;
+}
+
+/* Navbar links + Menu */
+
+.nav-links {
+    grid-column: 2;
+    display: flex;
+    gap: 2rem;
+}
+
+.menu {
+    color: #584028;
+    text-decoration: none;
+    font-size: medium;
+    padding: 0.6em 1.4em;
+    border-radius: 2rem;
+    background-color: #F6BD60;
+
+}
+
+/* Logo */
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 2%;
+    text-decoration: none;
+    color: #38291A;
+    font-family: 'Fraunces';
+    font-weight: bold;
+}
+
+.italic-words {
+    font-style: italic;
+}
+
+/* logo icon */
+.logo-icon {
+    height: 2.5em;
+}
+
+
+/* BANNER */
+
+/* Banner slogan/hook */
+.banner {
+    background-color: #F7EDE2;
+    padding-top: 4rem 1rem 0;
+    width: 100%;
+}
+
+.banner h1 {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: clamp(2.25rem, 9vw, 6rem);
+    font-family: 'Fraunces';
+    color: #F4B349;
+    font-weight: 900;
+}
+
+#instantly {
+    color: #5F8279;
+}
+
+.banner .italic-words {
+    color: #ED5552;
+}
+
+.banner p {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    color: #3B2A1A;
+    padding: 1.5em;
+}
+
+/* Banner Buttons */
+
+.anchor-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1em;
+}
+
+.anchor-buttons a {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.95em 2em;
+    color: #3B2A1A;
+    text-decoration: none;
+    background-color: #F6BD60;
+    border-radius: 1.5em;
+}
+
+#ab-1 {
+    box-shadow: 0 0.5rem 0.5rem rgba(246, 189, 96, 0.5);
+}
+
+#ab-2 {
+    background-color: #F5CAC3;
+}
+
+/* Banner Stats Bubbles */
+
+.bubbles {
+    display: flex;
+    justify-content: center;
+    gap: 1em;
+    padding: 4rem;
+}
+
+.bubbles p {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5em 2em;
+    background-color: #84A59D;
+    border-radius: 1.2em;
+    color: #3F2E1D;
+    font-weight: 400;
+}
+
+.bubblebold {
+    font-family: 'Fraunces';
+    font-weight: 900;
+    font-size: 1.5em;
+}
+
+#bb-2 {
+    background-color: #F6BD60;
+}
+
+#bb-3 {
+    background-color: #F28482;
+}
+
+/* AI DETECTION */
+.AI-Detection {
+    background-color: #84A59D;
+    padding: 3rem;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+}
+
+/* Titles */
+
+#try-session-button {
+    background-color: #F6BD60;
+    color: #584028;
+    padding: 0.5em 1rem;
+    border-radius: 5em;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+#ai-detection {
+    padding: 1.5em;
+    color: #584028;
+    font-family: 'Fraunces';
+    font-size: 1.25em;
+    font-weight: 900;
+}
+
+/* Input */
+#detection-input {
+    width: 100%;
+}
+
+#wordcount {
+    color: #3B2A1A;
+    font-weight: 500;
+    font-family: 'Plus Jakarta Sans';
+    font-size: 0.8rem;
+    padding-top: 2%;
+
+}
+
+
+
+/* Output */
+.card-output {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-output> :nth-child(-n + 3) {
+    animation: fadeInUp 0.5s ease-out backwards;
+}
+
+.card-output> :nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.card-output> :nth-child(2) {
+    animation-delay: 0.25s;
+}
+
+.card-output> :nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* Progress bar and text */
+
+#progress-percent {
+    color: #84A59D;
+}
+
+.progress-bar> :nth-child(-n + 3) {
+    animation: fadeInUp 0.5s ease-out backwards;
+}
+
+.progress-bar> :nth-child(1) {
+    animation-delay: 0.5s;
+}
+
+.progress-bar> :nth-child(2) {
+    animation-delay: 0.55s;
+}
+
+
+/* Sentence by sentence output */
+.results-row {
+    background-color: #84A59D;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(450px, 100%), 1fr));
+    align-items: start;
+    gap: 1.5rem;
+    padding: 0 3rem 3rem;
+}
+
+.sentence-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sentence-by-sentence {
+    width: 100%;
+    background-color: #fff;
+    color: #7A5C3A;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.Sentence-Highlight> :nth-child(-n + 3) {
+    animation: fadeInUp 0.5s ease-out backwards;
+}
+
+.Sentence-Highlight> :nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.Sentence-Highlight> :nth-child(2) {
+    animation-delay: 0.25s;
+}
+
+.Sentence-Highlight> :nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+.sentence-area,
+.Session-History {
+    min-width: 0;
+}
+
+
+/* Session History */
+.Session-History {
+    gap: 1rem;
+    max-width: 1024;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* Responsive */
+@media (max-width: 600px) {
+    .navbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+    }
+
+    .nav-links {
+        gap: 0.5rem;
+    }
+
+    .menu {
+        padding: 0.5em 1em;
+    }
+
+    .banner {
+        background-color: #F7EDE2;
+        padding-top: 2em;
+        width: 100%;
+    }
+
+    .anchor-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .anchor-buttons a {
+        width: 100%;
+        max-width: 260px;
+    }
+
+    .bubbles {
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .AI-Detection {
+        padding: 1.5rem 1rem;
+    }
+
+    .results-row {
+        padding: 0 1rem 1.5rem;
+    }
+
+    .sentence-by-sentence {
+        padding: 1rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+}
