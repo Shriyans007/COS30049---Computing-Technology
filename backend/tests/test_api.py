@@ -19,6 +19,15 @@ def test_health_and_model_info(client):
     assert info.json()["limits"]["maximum_characters"] == 10_000
 
 
+def test_interactive_docs_remain_usable_with_restricted_csp(client):
+    response = client.get("/docs")
+    assert response.status_code == 200
+    assert "SwaggerUIBundle" in response.text
+    policy = response.headers["content-security-policy"]
+    assert "https://cdn.jsdelivr.net" in policy
+    assert "frame-ancestors 'none'" in policy
+
+
 def test_prediction_contract_and_real_probabilities(client, valid_text):
     response = client.post("/api/v1/predict", json={"text": valid_text})
     assert response.status_code == 200

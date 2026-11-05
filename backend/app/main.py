@@ -19,18 +19,30 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 
 
 SECURITY_HEADERS = {
-    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Referrer-Policy": "no-referrer",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
 }
+API_CONTENT_SECURITY_POLICY = (
+    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+)
+DOCS_CONTENT_SECURITY_POLICY = (
+    "default-src 'none'; "
+    "script-src 'self' https://cdn.jsdelivr.net; "
+    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+    "img-src 'self' data: https://fastapi.tiangolo.com; "
+    "connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+)
 
 
-def add_security_headers(response: Response) -> Response:
+def add_security_headers(response: Response, *, documentation_page: bool = False) -> Response:
     for name, value in SECURITY_HEADERS.items():
         response.headers[name] = value
+    response.headers["Content-Security-Policy"] = (
+        DOCS_CONTENT_SECURITY_POLICY if documentation_page else API_CONTENT_SECURITY_POLICY
+    )
     return response
 
 
@@ -104,7 +116,9 @@ def create_app() -> FastAPI:
                     )
                 )
         response = await call_next(request)
-        return add_security_headers(response)
+        return add_security_headers(
+            response, documentation_page=request.url.path in {"/docs", "/redoc"}
+        )
 
 
     install_error_handlers(app)
