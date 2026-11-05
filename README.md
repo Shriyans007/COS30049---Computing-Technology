@@ -223,10 +223,10 @@ Actual committed run on 5 November 2026:
 | Total concurrent requests | 20 | 20 |
 | HTTP `200` | 20 | 2 |
 | HTTP `503` | 0 | 18 |
-| Mean response time | 1366.45 ms | 119.25 ms |
-| Median response time | 1436.54 ms | 88.53 ms |
-| Maximum response time | 1588.61 ms | 396.31 ms |
-| Health during load | `200`, 23.49 ms | `200`, 39.07 ms |
+| Mean response time | 1024.16 ms | 122.11 ms |
+| Median response time | 1012.96 ms | 79.08 ms |
+| Maximum response time | 1288.68 ms | 446.53 ms |
+| Health during load | `200`, 58.44 ms | `200`, 45.92 ms |
 
 This demonstrates application-level overload control on one machine, not protection against a network-level distributed attack. A timed-out Python worker cannot be forcibly killed; input bounds and the semaphore prevent unbounded accumulation.
 
@@ -243,38 +243,32 @@ Actual dependency audit before remediation found 10 Python advisory entries in S
 
 #### OWASP ZAP dynamic scan
 
-A team member ran the earlier OWASP ZAP scan against the live local React frontend (`http://localhost:5173`) and FastAPI Swagger interface (`http://127.0.0.1:8000/docs`).
+The team scanned both locally running application surfaces with OWASP ZAP Dev Standard in isolated sessions. The earlier scans established the before state; the final rescans measured the submitted header and resource-integrity configuration.
 
-- **Earlier backend findings:** the documentation endpoint was reported as missing a Content Security Policy and using cross-domain Swagger JavaScript/CSS resources. The API routes were already protected by the security-header middleware. The documentation response was subsequently given a restricted CSP and its external resources were pinned to an explicitly permitted jsDelivr version.
-- **Earlier frontend findings:** the Vite development server produced anti-clickjacking and Subresource Integrity findings. These related to Vite's local hot-reload server rather than the compiled production files. A production deployment must serve `frontend/dist` through a configured web server that supplies deployment-level headers.
+**Final backend rescan — `http://127.0.0.1:8000/docs`:**
 
-A follow-up backend scan was run on 5 November 2026 after the documentation hardening. ZAP completed with **0 high, 2 medium, 1 low and 1 informational alert**:
-
-| Risk | Follow-up finding | Interpretation |
+| Risk | Final finding | Interpretation |
 | --- | --- | --- |
-| High | None | No high-risk alert was reported |
-| Medium | CSP `style-src unsafe-inline` | Swagger uses inline presentation styles; inline JavaScript remains blocked |
-| Medium | Subresource Integrity attribute missing | Two pinned Swagger CDN resources did not include SRI attributes |
-| Low | Cross-domain JavaScript inclusion | Swagger loads its pinned bundle from the CSP-allow-listed jsDelivr origin |
-| Informational | Modern web application | Technology classification, not an exploit |
+| High | None | No high-risk alert reported |
+| Medium | CSP `style-src unsafe-inline` | Swagger UI requires runtime presentation styles; inline JavaScript remains blocked |
+| Low | None | The previous cross-domain JavaScript warning was eliminated after SRI hardening |
+| Informational | Modern Web Application | Technology classification, not an exploit |
 
-A separate clean frontend follow-up scan was completed on 6 November 2026 against only `http://localhost:5173`. It completed with **0 high, 3 medium, 1 low and 2 informational alert categories**:
+Final backend counts were **0 high, 1 medium, 0 low and 1 informational**. Compared with the earlier scan, the documentation now has a restrictive CSP, same-origin initialiser, exact Swagger version pinning, and verified SHA-384 integrity metadata with anonymous CORS mode. Both missing-SRI findings and the cross-domain JavaScript warning disappeared. Normal JSON API responses retain the stricter `default-src 'none'` policy.
 
-| Risk | Frontend finding | Instances | Interpretation |
+**Final frontend rescan — compiled preview at `http://localhost:5173`:**
+
+| Risk | Final finding | Instances | Interpretation |
 | --- | --- | ---: | --- |
-| High | None | 0 | No high-risk alert was reported |
-| Medium | Content Security Policy header not set | 3 | Vite's local development server does not add a deployment CSP |
-| Medium | Anti-clickjacking header missing | 3 | The development server does not add framing protection |
-| Medium | Subresource Integrity attribute missing | 3 | Development HTML/resources do not use SRI metadata |
-| Low | `X-Content-Type-Options` header missing | Systemic | The development server does not add `nosniff` |
-| Informational | Suspicious comments | 1 category | Passive source-code heuristic requiring manual review |
-| Informational | Modern web application | 3 | Technology classification, not an exploit |
+| High | None | 0 | No high-risk alert reported |
+| Medium | CSP `style-src unsafe-inline` | 3 | Material UI runtime styling compatibility; scripts remain restricted |
+| Low | Timestamp Disclosure — Unix | 1 category | Low-confidence match of a fixed 2018 value in bundled dependency code, not user or server data |
+| Informational | Suspicious Comments | 1 category | False-positive match of `select` inside minified selector-processing code |
+| Informational | Modern Web Application | 3 | Technology classification, not an exploit |
 
-These frontend results reproduce the categories in the earlier team scan. They describe the Vite hot-reload server used for local marking, not FastAPI or the prediction model. A deployed build must be served by a production web server with CSP, anti-clickjacking and MIME-sniffing headers.
+Final frontend counts were **0 high, 1 medium, 1 low and 2 informational**. The final scan no longer reported missing CSP, anti-clickjacking, SRI or `X-Content-Type-Options`. The compiled preview sends CSP, frame, MIME-sniffing, referrer and permissions protections. External Google Fonts were removed, eliminating their integrity warning.
 
-The earlier scan is retained as baseline evidence and the follow-up demonstrates that a CSP is now present. The remaining findings are documented as residual documentation-interface and CDN supply-chain risks; they do not prove compromise of the prediction API. The raw alert categories and interpretation are recorded under `security-evidence/`.
-
-The ZAP findings, dependency audits and direct malicious-request tests are interpreted together. Development-server findings are not presented as vulnerabilities in the model API.
+The remaining inline-style allowances are documented compatibility costs limited to presentation styling; neither policy permits unrestricted inline JavaScript. Passive low/informational matches were inspected rather than automatically dismissed. ZAP results are interpreted together with dependency audits, malicious-request tests and the reproducible security experiments. Exact counts and limitations are recorded under `security-evidence/`.
 
 ## Section 2.8 detection evasion
 
