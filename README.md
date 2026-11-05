@@ -157,6 +157,9 @@ The comparison represents application-level resource exhaustion on one computer,
 *   **Payload Overflow:** We sent a payload of 20,000 characters to '/api/v1/predict'. The server firmly rejected it with '413 Request Entity Too Large' and a clean JSON error, leaving no stack traces exposed.
 *   **Header Inspection:**  `curl -I` verified that `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff` are present on all responses.
 
+**The Cost of the Defence:**
+This defence has a low cost in terms of runtime performance. Adding security headers increases the HTTP response size by only a few bytes. However, tight CORS configuration incurs a minor development cost: any future frontend (such as a mobile app) must be explicitly whitelisted in the '.env' file to communicate with the API. Furthermore, pinning dependencies requires us to manually examine and update packages in order to receive new features.  We accept this configuration friction since it ensures the API's security against unauthorised domains and prevents unforeseen breaking changes in production.
+
 **API Documentation (`/docs`):** We confirmed that the FastAPI auto-generated Swagger UI ('/docs') includes detailed endpoint descriptions, summaries, and error response models. Pydantic models contain 'json_schema_extra', which provides pre-filled example requests and responses.
 
 
