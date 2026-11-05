@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 
 from .config import get_settings
 from .errors import error_payload, install_error_handlers
@@ -35,6 +35,32 @@ DOCS_CONTENT_SECURITY_POLICY = (
     "img-src 'self' data: https://fastapi.tiangolo.com; "
     "connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
 )
+
+SWAGGER_UI_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Content Detector API - Swagger UI</title>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui.css">
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
+  <script src="/docs-init.js"></script>
+</body>
+</html>
+"""
+
+SWAGGER_INIT_SCRIPT = """window.ui = SwaggerUIBundle({
+  url: "/openapi.json",
+  dom_id: "#swagger-ui",
+  deepLinking: true,
+  showExtensions: true,
+  showCommonExtensions: true
+});
+"""
 
 
 def add_security_headers(response: Response, *, documentation_page: bool = False) -> Response:
@@ -74,6 +100,8 @@ def create_app() -> FastAPI:
         description="Secure API around the team's Assignment 2 AI-content classifiers.",
         lifespan=lifespan,
         debug=False,
+        docs_url=None,
+        redoc_url=None,
     )
     app.add_middleware(
         CORSMiddleware,
@@ -117,9 +145,18 @@ def create_app() -> FastAPI:
                 )
         response = await call_next(request)
         return add_security_headers(
-            response, documentation_page=request.url.path in {"/docs", "/redoc"}
+            response, documentation_page=request.url.path in {"/docs", "/docs-init.js"}
         )
 
+    @app.get("/docs", include_in_schema=False)
+    async def swagger_ui() -> HTMLResponse:
+        """Serve Swagger without an inline script so the strict CSP remains effective."""
+        return HTMLResponse(SWAGGER_UI_HTML)
+
+    @app.get("/docs-init.js", include_in_schema=False)
+    async def swagger_init() -> Response:
+        """Initialise Swagger from a same-origin script allowed by the documentation CSP."""
+        return Response(SWAGGER_INIT_SCRIPT, media_type="application/javascript")
 
     install_error_handlers(app)
     app.include_router(health_router, prefix="/api/v1")
