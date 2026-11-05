@@ -24,6 +24,16 @@ def test_interactive_docs_remain_usable_with_restricted_csp(client):
     assert response.status_code == 200
     assert "/docs-init.js" in response.text
     assert "<script src=\"https://cdn.jsdelivr.net/" in response.text
+    assert response.text.count('integrity="sha384-') == 2
+    assert response.text.count('crossorigin="anonymous"') == 2
+    assert (
+        "sha384-wxLW6kwyHktdDGr6Pv1zgm/VGJh99lfUbzSn6HNHBENZlCN7W602k9VkGdxuFvPn"
+        in response.text
+    )
+    assert (
+        "sha384-wmyclcVGX/WhUkdkATwhaK1X1JtiNrr2EoYJ+diV3vj4v6OC5yCeSu+yW13SYJep"
+        in response.text
+    )
 
     init_script = client.get("/docs-init.js")
     assert init_script.status_code == 200
