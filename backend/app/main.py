@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from .config import get_settings
 from .errors import error_payload, install_error_handlers
@@ -16,6 +16,22 @@ from .security import InferenceGate, SlidingWindowRateLimiter
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
+
+SECURITY_HEADERS = {
+    "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Referrer-Policy": "no-referrer",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+}
+
+
+def add_security_headers(response: Response) -> Response:
+    for name, value in SECURITY_HEADERS.items():
+        response.headers[name] = value
+    return response
 
 
 @asynccontextmanager
@@ -57,20 +73,39 @@ def create_app() -> FastAPI:
 
     @app.middleware("http")
     async def require_json_and_bound_body(request: Request, call_next):
+        origin = request.headers.get("origin")
+        if request.method == "OPTIONS" and origin and origin not in settings.allowed_origins:
+            return add_security_headers(
+                JSONResponse(
+                    error_payload("CORS_ORIGIN_DENIED", "The request origin is not allowed."),
+                    status_code=400,
+                )
+            )
         if request.method == "POST" and request.url.path == "/api/v1/predict":
             content_type = request.headers.get("content-type", "").split(";", 1)[0].lower()
             if content_type != "application/json":
-                return JSONResponse(error_payload("UNSUPPORTED_MEDIA_TYPE", "Content-Type must be application/json."), status_code=415)
+                return add_security_headers(
+                    JSONResponse(
+                        error_payload(
+                            "UNSUPPORTED_MEDIA_TYPE",
+                            "Content-Type must be application/json.",
+                        ),
+                        status_code=415,
+                    )
+                )
             length = request.headers.get("content-length")
             if length and length.isdigit() and int(length) > settings.max_bytes + 1_000:
-                return JSONResponse(error_payload("REQUEST_TOO_LARGE", "The request body is too large."), status_code=413)
+                return add_security_headers(
+                    JSONResponse(
+                        error_payload(
+                            "REQUEST_TOO_LARGE", "The request body is too large."
+                        ),
+                        status_code=413,
+                    )
+                )
         response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        return add_security_headers(response)
 
-        return response
-    
 
     install_error_handlers(app)
     app.include_router(health_router, prefix="/api/v1")

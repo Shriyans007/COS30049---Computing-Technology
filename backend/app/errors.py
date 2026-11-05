@@ -29,7 +29,12 @@ def install_error_handlers(app: FastAPI) -> None:
         return JSONResponse(error_payload(error.code, error.message), status_code=error.status_code)
 
     @app.exception_handler(RequestValidationError)
-    async def validation_error_handler(_: Request, __: RequestValidationError) -> JSONResponse:
+    async def validation_error_handler(_: Request, error: RequestValidationError) -> JSONResponse:
+        if any(item.get("type") == "string_too_long" for item in error.errors()):
+            return JSONResponse(
+                error_payload("TEXT_TOO_LARGE", "Text must not exceed 10,000 characters."),
+                status_code=413,
+            )
         return JSONResponse(
             error_payload("INVALID_REQUEST", "The request body is malformed or has invalid fields."),
             status_code=422,
