@@ -50,3 +50,5 @@ Automated backend tests bypass the frontend and verify:
 A team member had already run OWASP ZAP against the live local frontend and backend during the earlier implementation. That scan reported Swagger documentation CSP/cross-domain-resource findings and development-server anti-clickjacking/SRI findings. The original ZAP summary, malicious `curl` checks, dependency results and defence-cost explanation have been recovered in [`recovered-original-security-results.md`](./recovered-original-security-results.md).
 
 The recovered file is retained as historical attack evidence. Later dependency and security-header changes supersede some of its package versions and documentation findings; the main README reports the final submitted configuration.
+
+A backend follow-up scan was then completed after documentation hardening. Its observed severity counts, remaining findings, before/after interpretation and limitations are recorded in [`zap-follow-up-summary.md`](./zap-follow-up-summary.md).
