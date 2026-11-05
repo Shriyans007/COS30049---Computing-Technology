@@ -150,6 +150,31 @@ Every error has one structure:
 }
 ```
 
+The default limits are 20–10,000 characters, 40,000 UTF-8 bytes and 100
+sentences. Relevant failures use `400`, `413`, `415`, `422`, `429`, `503` or
+`500`; internal paths and stack traces are logged server-side only.
+
+
+### Architecture Diagram
+
+<img width="1840" height="884" alt="image" src="https://github.com/user-attachments/assets/d09256c7-82b2-44e3-b535-c4e31513bb4d" />
+
+
+
+### Security design
+
+The API applies NFKC, removes zero-width/unsafe format characters, normalises
+whitespace and maps a deliberately small set of Latin-looking Cyrillic/Greek
+characters before inference. Original text remains in the JSON sentence display
+and React must render it as text, never HTML.
+
+Model calls run in worker threads, outside the asynchronous event loop. A
+semaphore permits two simultaneous inferences and a bounded wait rejects excess
+work with `503`, leaving the health route responsive. Timeouts bound how long a
+caller waits, although Python cannot forcibly stop a worker thread already
+running. Character, byte and sentence limits prevent small requests expanding
+into disproportionate work. A separate high per-client request limit returns
+`429`; this supports general hygiene but is not the marked DoS mechanism.
 The API uses `400` for unsafe/empty content, `413` for size or sentence limits, `415` for a non-JSON prediction request, `422` for malformed JSON or shape errors, `429` for the additional rate limit, `503` for bounded-capacity rejection/timeouts and `500` for unexpected failures. Stack traces, model paths and exception details are never returned.
 
 ### Input limits
@@ -164,6 +189,19 @@ The API uses `400` for unsafe/empty content, `413` for size or sentence limits, 
 | Queue wait | 0.05 seconds | Reject overload promptly with `503` |
 | Inference timeout | 15 seconds | Bound the caller's wait |
 
+**1. Who would want to attack your application?**
+There are two main attackers. First, a hacker seeking to bypass the system, such as someone attempting to pass off AI-generated content as human-written. Second, a malicious actor or automated bot attempting to disrupt the service or identify infrastructure flaws. 
+
+**2. What are they trying to achieve?**
+ The evasion attacker intends to modify text by using look-alike Unicode characters or zero-width spaces, making it appear normal to a human but misclassified by the model. The disruptive attacker aims to crash the service by flooding the API with expensive inference requests or probing the system for missing security headers.
+
+**3. What can they actually do to it?**
+Attackers use tools like 'curl' to connect directly with the FastAPI backend, bypassing the React frontend entirely. They can transmit malicious text payloads, send a large number of simultaneous requests to drain server resources, and probe HTTP responses. 
+
+**Risk Analysis:**
+Our framework is a stateless text-processing API without a database or user accounts. This design exposes us to certain risks while making others irrelevant. 
+*   **Risks that do NOT apply:** SQL Injection, Command Injection, Unsafe File Upload, SSRF, and Broken Access Control.
+*   **Risks that DO apply:** Denial of Service, Misconfiguration, and Detection Evasion.
 ## Model integration
 
 The committed models are:
@@ -183,6 +221,36 @@ python -m classification.train --unit document --dataset data\processed\para_dat
 The large source CSVs are intentionally excluded from Git. They are not required to run the submitted application because the fitted artifacts are committed.
 
 ## Threat model
+
+### Defence 2: Intermediate Misconfiguration and Vulnerable Dependency Protection
+**Configuration and Secrets:** Secrets and configurations are kept out of source code via 'pydantic-settings' and a local '.env' file. Debug mode is specifically disabled to avoid stack trace leaks.  We created a custom middleware that adds standard security headers (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Strict-Transport-Security`) into every HTTP response.
+
+**Dependency Audits:** We ran 'pip-audit' and initially detected 32 vulnerabilities. We updated 'fastapi' to '0.122.0','starlette' to '0.49.3', and 'pip' to '26.2.2'. We ran the 'pytest' test to ensure that these updates did not break the application.(**23 tests passed**). 
+*   *Justified risk:*  'pip-audit' flags 'pytest 8.3.4'. We accepted this risk because 'pytest' is development-only and does not appear in production. Upgrading breaks our async testing plugin.
+
+*   **Frontend (`npm audit`):** Six moderate severity vulnerabilities were discovered in the 'minimatch' package, all linked to a Denial of Service vulnerability. We justified this by noting that the vulnerability existed solely within 'eslint' (a development-only code linting tool) and cannot be abused by an attacker interacting with the live application.
+     
+*   **Dynamic Scan of the Running Application (OWASP ZAP):** 
+    We performed an automated ZAP scan on the live application, focusing on both the React frontend (`http://localhost:5173`) and the FastAPI backend (`http://127.0.0.1:8000/docs`). 
+    
+    *   **Backend Findings:**  ZAP detected that the '/docs' endpoint was missing Content Security Policy (CSP) headers and cross-domain script inclusion. We classified them as false positives because they were generated by the third-party Swagger UI library, which pulls external JavaScript and CSS packages from a CDN. Our actual API routes (`/api/v1/predict` and `/api/v1/health`) remain fully protected by our custom Security Headers middleware.
+      
+    *   **Frontend Findings:** ZAP flagged the Vite development server (`localhost:5173`) for missing Anti-clickjacking headers and Sub Resource Integrity (SRI). We justified these findings as expected in a local development environment. Vite prioritises hot reloading above security headers. In production, the compiled React files are served by a production web server, which is responsible for injecting these headers.  
+
+**Malicious Request Testing (curl):** We bypassed the frontend and targeted the API directly:
+*   **CORS Attack:** We sent an 'OPTIONS' request containing a malicious 'Origin' header (`https://group8.attack`). The server returned '400 Bad Request' and 'Disallowed CORS Origin'.
+*   **Payload Overflow:** We sent a payload of 20,000 characters to '/api/v1/predict'. The server firmly rejected it with '413 Request Entity Too Large' and a clean JSON error, leaving no stack traces exposed.
+*   **Header Inspection:**  `curl -I` verified that `X-Frame-Options: DENY` and `X-Content-Type-Options: nosniff` are present on all responses.
+
+**The Cost of the Defence:**
+This defence has a low cost in terms of runtime performance. Adding security headers increases the HTTP response size by only a few bytes. However, tight CORS configuration incurs a minor development cost: any future frontend (such as a mobile app) must be explicitly whitelisted in the '.env' file to communicate with the API. Furthermore, pinning dependencies requires us to manually examine and update packages in order to receive new features.  We accept this configuration friction since it ensures the API's security against unauthorised domains and prevents unforeseen breaking changes in production.
+
+**API Documentation (`/docs`):** We confirmed that the FastAPI auto-generated Swagger UI ('/docs') includes detailed endpoint descriptions, summaries, and error response models. Pydantic models contain 'json_schema_extra', which provides pre-filled example requests and responses.
+
+
+## Advanced attack
+
+## Detection evasion
 
 ### Who may attack it?
 
@@ -213,6 +281,84 @@ The local experiment uses the real HTTP endpoint and a controlled 250 ms experim
 python -m backend.experiments.dos_experiment --requests 20
 ```
 
+The detection-evasion script tests four variants against a fixed set, then
+repeats the same measurements after normalisation. The DoS script sends real
+concurrent HTTP requests to controlled baseline and protected localhost servers.
+Raw CSV rows and JSON summaries are saved under
+`backend/experiments/results/`. Results depend on the committed model and local
+hardware and must be regenerated rather than quoted without running them.
+
+The committed run produced 48 variants from 12 eligible AI examples. Evasion
+was 47.92% before normalisation and 0% afterwards on this fixed set; none of
+eight clean controls changed class. In the 20-request localhost overload run,
+the baseline accepted all 20 requests, while protected mode completed two and
+rejected 18 with `503`. The health endpoint returned `200` during both runs.
+
+The fixed evasion corpus is intentionally small and is not evidence of model
+accuracy. The confusable mapping is incomplete; making it aggressive would
+damage legitimate multilingual writing. The DoS experiment uses an explicit
+local-only delay for reproducible cost and does not claim to simulate a network
+level distributed attack.
+
+
+## Generative AI Statement
+
+Throughout this assignment, generative AI tools were used solely for learning and brainstorming. 
+
+The team members wrote, understood, and validated all of the core application logic, security configurations including the implementation of security headers, CORS policies, and dependency pinning, and React visualisations.
+
+We take full responsibility for the code, security defences, and documentation implemented in this repository.
+
+
+## Current status
+
+Person 2 supplied sentence- and document-level representations of the combined
+three-source dataset. The preprocessing and classification code is complete,
+but the models must be retrained after the corrected feature formulas are used.
+The model files and metric CSVs currently committed in the repository are from
+an earlier dataset version and must not be quoted as final Assignment 2 results.
+
+Both new training runs use reproducible, stratified 70/15/15
+train/validation/test partitions. Sentence rows are grouped by `doc_id`, so
+sentences from one essay cannot appear in different partitions. All three
+models use the same held-out test set, and model selection uses validation F1
+before the test set is evaluated.
+
+## Setup
+
+Conda (recommended for the submitted README requirement):
+
+```bash
+conda create --name cos30049-a2 python=3.12 -y
+conda activate cos30049-a2
+python -m pip install -r requirements.txt
+```
+
+Alternatively, use a Python virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+Windows PowerShell:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+macOS/Linux:
+
+```bash
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
+
+## Dataset
+
+The CSVs are not committed because they exceed GitHub's file-size limit.
+Recommended local paths are:
 Actual committed run on 5 November 2026:
 
 | Measurement | Baseline | Protected |
