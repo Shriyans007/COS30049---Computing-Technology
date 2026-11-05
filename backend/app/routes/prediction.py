@@ -19,7 +19,10 @@ router = APIRouter(tags=["prediction"])
     responses={
         400: {"model": ErrorResponse, "description": "Empty, short or unsafe input"},
         413: {"model": ErrorResponse, "description": "Character, byte or sentence limit exceeded"},
+        415: {"model": ErrorResponse, "description": "Request is not JSON"},
+        422: {"model": ErrorResponse, "description": "Malformed JSON or invalid request shape"},
         429: {"model": ErrorResponse, "description": "Per-client request limit exceeded"},
+        500: {"model": ErrorResponse, "description": "Unexpected model or server failure"},
         503: {"model": ErrorResponse, "description": "Inference capacity or timeout exceeded"},
     },
 )
