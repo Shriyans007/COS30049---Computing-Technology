@@ -52,3 +52,5 @@ A team member had already run OWASP ZAP against the live local frontend and back
 The recovered file is retained as historical attack evidence. Later dependency and security-header changes supersede some of its package versions and documentation findings; the main README reports the final submitted configuration.
 
 A backend follow-up scan was then completed after documentation hardening. Its observed severity counts, remaining findings, before/after interpretation and limitations are recorded in [`zap-follow-up-summary.md`](./zap-follow-up-summary.md).
+
+A separate frontend-only scan reproduced the Vite development-server findings from the earlier team scan. Its isolated counts and deployment interpretation are recorded in [`zap-frontend-follow-up-summary.md`](./zap-frontend-follow-up-summary.md).
