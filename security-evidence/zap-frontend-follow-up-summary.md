@@ -2,46 +2,49 @@
 
 ## Scope
 
-- Date: 6 November 2026
+- Final rescan date: 6 November 2026
 - Target: `http://localhost:5173`
-- Application: React/Vite local development server
+- Application: compiled React/Vite build served with `npm run preview`
 - Scan policy: ZAP Dev Standard
 - Traditional spider: enabled
-- Modern spider: Client Spider with Chrome Headless
+- Client Spider: Chrome Headless
 - Session isolation: new ZAP session containing only the frontend target
 
-## Observed results
+## Final observed results
 
-The completed frontend-only ZAP alert panel reported:
+The final frontend ZAP alert panel reported:
 
 | Severity | Alert category | Instances |
 | --- | --- | ---: |
 | High | None | 0 |
-| Medium | Content Security Policy (CSP) Header Not Set | 3 |
-| Medium | Missing Anti-clickjacking Header | 3 |
-| Medium | Subresource Integrity Attribute Missing | 3 |
-| Low | X-Content-Type-Options Header Missing | Systemic |
-| Informational | Information Disclosure — Suspicious Comments | Alert category |
+| Medium | CSP `style-src unsafe-inline` | 3 |
+| Low | Timestamp Disclosure — Unix | 1 category |
+| Informational | Information Disclosure — Suspicious Comments | 1 category |
 | Informational | Modern Web Application | 3 |
 
-Overall category counts were **0 high, 3 medium, 1 low and 2 informational**.
+Overall category counts were **0 high, 1 medium, 1 low and 2 informational**.
 
-## Interpretation
+## Remediation and interpretation
 
-The scan reproduces the frontend categories recorded in the team's earlier scan. The medium and low header findings relate to Vite's local development/hot-reload server. Vite is used to run and mark the source project locally; it is not the production web server for the compiled application.
+The earlier frontend scan reported missing CSP, missing anti-clickjacking protection, missing Subresource Integrity metadata and missing `X-Content-Type-Options`. The compiled preview now sends:
 
-For deployment, `npm run build` produces `frontend/dist`. A production web server or hosting platform must serve that directory and add:
-
-- a deployment-specific Content Security Policy;
-- frame protection through `frame-ancestors` and/or `X-Frame-Options`;
+- a restrictive Content Security Policy;
+- `X-Frame-Options: DENY` and `frame-ancestors 'none'`;
 - `X-Content-Type-Options: nosniff`;
-- integrity-controlled or self-hosted third-party resources where applicable.
+- a restrictive referrer policy and permissions policy.
 
-The suspicious-comments alert is a passive heuristic and requires inspection of the exact evidence before treating it as sensitive disclosure. The modern-web-application alert is informational technology identification.
+The external Google Fonts stylesheet was removed and replaced with local system-font stacks, eliminating its SRI finding. The final rescan no longer reported missing CSP, anti-clickjacking, SRI or MIME-sniffing protection.
+
+The remaining medium alert is a documented Material UI trade-off. Material UI injects presentation styles at runtime, so `style-src 'unsafe-inline'` is retained while scripts remain restricted to same-origin and the configured nonce.
+
+The low-confidence timestamp alert matched the fixed value `1540483477` inside the compiled JavaScript bundle, representing 26 October 2018. It is not current server time, user data, a session value or application telemetry.
+
+The suspicious-comments heuristic matched the word `select` inside minified selector-processing code. It did not expose a developer comment, database query, credential, path or secret. The Modern Web Application finding is informational technology identification.
 
 ## Limitations
 
-- This scan assesses the Vite development server, not a configured production deployment.
-- These findings do not apply to FastAPI responses; the backend has separate security middleware and a separate ZAP summary.
+- These headers are supplied by the configured Vite preview server for local marking. A real deployment must reproduce them at its production web server or hosting platform.
+- The inline-style allowance is a deliberate compatibility trade-off and does not permit inline JavaScript.
+- Passive-scan false positives were manually inspected rather than silently ignored.
 - A ZAP result does not prove that no other vulnerability exists.
-- The exported frontend HTML report and alert screenshot should be retained with the final submission evidence.
+- The final alert screenshot should be retained with the submission evidence.
