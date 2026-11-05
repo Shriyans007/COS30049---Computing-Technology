@@ -9,10 +9,10 @@ const theme = createTheme({
     background: { default: "#F7EDE2", paper: "#FFFFFF" },
   },
   typography: {
-    fontFamily: "'Plus Jakarta Sans', sans-serif",
-    h1: { fontFamily: "'Fraunces', serif", fontWeight: 900 },
-    h2: { fontFamily: "'Fraunces', serif", fontWeight: 900 },
-    h3: { fontFamily: "'Fraunces', serif", fontWeight: 900 },
+    fontFamily: '"Segoe UI", Arial, sans-serif',
+    h1: { fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 900 },
+    h2: { fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 900 },
+    h3: { fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 900 },
   },
   shape: { borderRadius: 24 },
 });
