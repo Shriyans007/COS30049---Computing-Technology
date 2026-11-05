@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 const Ranges = [
     { key: "strong", min: 0.9, bg: "#F28482", label: "Strong AI Likelihood" },

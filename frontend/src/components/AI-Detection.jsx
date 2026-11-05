@@ -1,8 +1,7 @@
 import { useState } from "react";
 import SearchIcon from "@mui/icons-material/SearchRounded"
-import SentenceHighlight from "./SentenceHighlight";
 import { detectText } from "./detectAPI";
-import { TextField, Button, CircularProgress, Alert, Box, Typography, LinearProgress } from "@mui/material";
+import { TextField, Button, CircularProgress, Alert, Box, Typography, LinearProgress, Chip } from "@mui/material";
 
 
 
@@ -14,6 +13,9 @@ export default function AIDetection({ onResult }) {
   const [result, setResult] = useState(null)
 
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+  const characterCount = text.length;
+  const byteCount = new TextEncoder().encode(text).length;
+  const sentenceCount = text.trim() ? text.trim().split(/(?<=[.!?])\s+/).filter(Boolean).length : 0;
   const progressId = "ai-probability-label"
   const verdictWording = {
     ai: "Likely AI-written",
@@ -23,24 +25,35 @@ export default function AIDetection({ onResult }) {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (wordCount < 20) {
-      setFormError(`Please enter at least 20 words (you have ${wordCount}).`);
+    if (!text.trim()) {
+      setFormError("Enter some text before starting the analysis.");
       setStatus('typing');
       return;
     }
-    if (wordCount > 10000) {
-      setFormError(`Please keep your text under 10,000 words (you have ${wordCount}).`);
+    if (characterCount < 20) {
+      setFormError(`Please enter at least 20 characters (you have ${characterCount}).`);
+      setStatus('typing');
+      return;
+    }
+    if (characterCount > 10000 || byteCount > 40000) {
+      setFormError("Text must stay within 10,000 characters and 40,000 UTF-8 bytes.");
+      setStatus('typing');
+      return;
+    }
+    if (sentenceCount > 100) {
+      setFormError(`Please keep your text to 100 sentences or fewer (you have ${sentenceCount}).`);
       setStatus('typing');
       return;
     }
     setFormError(null);
+    setErrorMessage("");
+    setResult(null);
     setStatus('processing');
     try {
       const data = await detectText(text);
       setResult(data);
       onResult?.({
         docId: crypto.randomUUID(),
-        timestamp: Date.now(),
         docPreview: text.trim().slice(0, 40),
         fullText: text.trim(),
         wordCount,
@@ -89,12 +102,13 @@ export default function AIDetection({ onResult }) {
                 maxRows={16}
                 fullWidth
                 variant="filled"
-                slotProps={{ input: { disableUnderline: true }, htmlInput: { "aria-label": "Text to analyse" }, }}
-                placeholder="Input Text here..."
+                label="Text to analyse"
+                slotProps={{ input: { disableUnderline: true }, htmlInput: { "aria-describedby": "text-guidance" }, }}
+                placeholder="Paste a paragraph or document here..."
                 value={text}
-                onChange={(e) => { setText(e.target.value); setFormError(null); }}
+                onChange={(e) => { setText(e.target.value); setFormError(null); setErrorMessage(""); if (status === "error") setStatus("typing"); }}
                 error={formError !== null}
-                helperText={formError}
+                helperText={formError ?? "20–10,000 characters, up to 100 sentences."}
                 disabled={status === 'processing'}
                 sx={{
                   "& .MuiFilledInput-root": {
@@ -110,9 +124,20 @@ export default function AIDetection({ onResult }) {
                 }}
               />
             </div>
-            <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, mt: 2, }}>
-              <p id="wordcount">{wordCount} words</p>
-              <Button type="submit" variant="contained" color="error" disabled={status === 'processing'} sx={{ textTransform: "none", color: "#3B2A1A" }}>  <SearchIcon></SearchIcon>Analyze</Button>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2, mt: 2, }}>
+              <p id="text-guidance">{characterCount.toLocaleString()} characters · {wordCount.toLocaleString()} words</p>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Button
+                  type="button"
+                  variant="outlined"
+                  disabled={status === 'processing' || text.length === 0}
+                  onClick={() => { setText(""); setResult(null); setFormError(null); setErrorMessage(""); setStatus("typing"); }}
+                  sx={{ textTransform: "none" }}
+                >
+                  Clear
+                </Button>
+                <Button type="submit" variant="contained" color="error" disabled={status === 'processing'} sx={{ textTransform: "none", color: "#3B2A1A" }}>  <SearchIcon />Analyse</Button>
+              </Box>
             </Box>
           </Box>
         </Box>
@@ -129,9 +154,15 @@ export default function AIDetection({ onResult }) {
           color: "#7A5C3A"
         }}>
           {status === 'typing' && <p>Results Will Appear Here</p>}
-          {status === 'processing' && <CircularProgress />}
+          {status === 'processing' && (
+            <Box role="status" sx={{ display: "grid", justifyItems: "center", gap: 2 }}>
+              <CircularProgress />
+              <Typography>Analysing your text…</Typography>
+            </Box>
+          )}
           {status === 'complete' && (
             <Box className="card-output">
+              <Chip label="Analysis complete" color="secondary" size="small" />
               <Box sx={{ position: 'relative', display: 'inline-flex' }}>
                 {/* Confidence bar */}
                 <CircularProgress variant="determinate" size={100} value={Math.round(result.confidence * 100)} />
@@ -188,6 +219,16 @@ export default function AIDetection({ onResult }) {
                   </Box>
 
                 </Box>
+                {result.confidence_range && (
+                  <Typography variant="body2" sx={{ mt: 1, color: "#584028" }}>
+                    Sentence range: {Math.round(result.confidence_range.lower * 100)}%–{Math.round(result.confidence_range.upper * 100)}%
+                  </Typography>
+                )}
+                {result.normalisation_applied && (
+                  <Typography variant="caption" sx={{ mt: 1, color: "#584028", display: "block" }}>
+                    Security normalisation was applied before analysis.
+                  </Typography>
+                )}
               </div>
             </Box>
           )}
