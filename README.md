@@ -90,7 +90,8 @@ sentences. Relevant failures use `400`, `413`, `415`, `422`, `429`, `503` or
 
 ### Architecture Diagram
 
-<img width="1840" height="884" alt="image" src="https://github.com/user-attachments/assets/205e999d-08da-4363-a740-8195a1cac218" />
+<img width="1840" height="884" alt="image" src="https://github.com/user-attachments/assets/d09256c7-82b2-44e3-b535-c4e31513bb4d" />
+
 
 
 ### Security design
