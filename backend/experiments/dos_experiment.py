@@ -114,7 +114,7 @@ async def run(requests: int) -> dict[str, object]:
         summaries.append(summary)
     RESULTS.mkdir(parents=True, exist_ok=True)
     with (RESULTS / "dos_results.csv").open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(all_rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=list(all_rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(all_rows)
     combined = {
