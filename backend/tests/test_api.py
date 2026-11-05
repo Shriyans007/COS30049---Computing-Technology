@@ -22,9 +22,20 @@ def test_health_and_model_info(client):
 def test_interactive_docs_remain_usable_with_restricted_csp(client):
     response = client.get("/docs")
     assert response.status_code == 200
-    assert "SwaggerUIBundle" in response.text
+    assert "/docs-init.js" in response.text
+    assert "<script src=\"https://cdn.jsdelivr.net/" in response.text
+
+    init_script = client.get("/docs-init.js")
+    assert init_script.status_code == 200
+    assert init_script.headers["content-type"].startswith("application/javascript")
+    assert "SwaggerUIBundle" in init_script.text
+    assert 'url: "/openapi.json"' in init_script.text
+
     policy = response.headers["content-security-policy"]
-    assert "https://cdn.jsdelivr.net" in policy
+    script_policy = policy.split("script-src ", 1)[1].split(";", 1)[0]
+    assert "'self'" in script_policy
+    assert "https://cdn.jsdelivr.net" in script_policy
+    assert "'unsafe-inline'" not in script_policy
     assert "frame-ancestors 'none'" in policy
 
 
