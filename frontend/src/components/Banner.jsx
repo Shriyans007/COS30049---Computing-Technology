@@ -7,7 +7,6 @@ export default function Banner() {
 
       <div className="anchor-buttons">
         <a href="#ai-detection" className="text-check" id="ab-1">Check your text</a>
-        <a href="#ai-detection" className="how-it-works" id="ab-2">See how it works</a>
       </div>
 
       <div className="bubbles">

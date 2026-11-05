@@ -41,14 +41,14 @@ export default function AIDetection({ onResult }) {
       onResult?.({
         docId: crypto.randomUUID(),
         timestamp: Date.now(),
-        docPreview: text.trim().slice(0, 40), 
+        docPreview: text.trim().slice(0, 40),
         fullText: text.trim(),
         wordCount,
         prediction: data.prediction,
         ai_probability: data.ai_probability,
         confidence: data.confidence,
         confidence_range: data.confidence_range ?? null,
-      });
+      }, data);
       setStatus('complete');
     } catch (err) {
       setErrorMessage(err.message);
@@ -59,7 +59,7 @@ export default function AIDetection({ onResult }) {
 
   return (
     <div className="AI-Detection">
-      <h5 id="trybutton">TRY IT NOW</h5>
+      <p id="try-session-button">TRY IT NOW</p>
       <div id="ai-detection">
         <h2>Drop your text in.</h2>
       </div>
@@ -77,7 +77,6 @@ export default function AIDetection({ onResult }) {
           borderRadius: "1rem",
           p: 2.5,
           width: "100%",
-          maxWidth: 500,
 
         }} >
           {/* AI Detection Input */}
@@ -87,6 +86,7 @@ export default function AIDetection({ onResult }) {
                 id="text-input"
                 multiline
                 minRows={8}
+                maxRows={16}
                 fullWidth
                 variant="filled"
                 slotProps={{ input: { disableUnderline: true }, htmlInput: { "aria-label": "Text to analyse" }, }}
@@ -112,7 +112,7 @@ export default function AIDetection({ onResult }) {
             </div>
             <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2, mt: 2, }}>
               <p id="wordcount">{wordCount} words</p>
-              <Button type="submit" variant="contained" color="error" disabled={status === 'processing'} sx={{ textTransform: "none", }}>  <SearchIcon></SearchIcon>Analyze</Button>
+              <Button type="submit" variant="contained" color="error" disabled={status === 'processing'} sx={{ textTransform: "none", color: "#3B2A1A" }}>  <SearchIcon></SearchIcon>Analyze</Button>
             </Box>
           </Box>
         </Box>
@@ -125,7 +125,6 @@ export default function AIDetection({ onResult }) {
           borderRadius: "1rem",
           p: 2.5,
           width: "100%",
-          maxWidth: 500,
           minHeight: { xs: 300 },
           color: "#7A5C3A"
         }}>
@@ -157,56 +156,46 @@ export default function AIDetection({ onResult }) {
                 </Box>
               </Box>
               <Typography>Confidence</Typography>
-              <Typography variant="h3" sx={{ color: "#F6BD60", fontSize: "2.5rem" }}>
-                {verdictWording[result.prediction] ?? "Results unavailable :("}
-              </Typography>
-              <Typography id={progressId} variant="body2" color="text.secondary">
-                AI Probability
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+              <div className="progress-bar">
+                <Typography variant="h3" sx={{ color: "#755637", fontSize: "2.5rem" }}>
+                  {verdictWording[result.prediction] ?? "Results unavailable :("}
+                </Typography>
+                <Typography id={progressId} variant="body2" color="text.secondary">
+                  AI Probability
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
 
-                {/* AI-probability bar */}
-                <Box sx={{ width: '50%', mr: 1 }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={Math.round(result.ai_probability * 100)}
-                    aria-labelledby={progressId}
-                    color="secondary"
-                    sx={{
-                      height: 12,
-                      borderRadius: 6,
-                      "& .MuiLinearProgress-bar": { borderRadius: 6 },
-                    }}
-                  />
-                </Box>
-                <Box sx={{ minWidth: 35 }}>
-                  <Typography variant="body2" sx={{ color: 'secondary' }}>
-                    {`${Math.round(result.ai_probability * 100)}%`}
-                  </Typography>
-                </Box>
+                  {/* AI-probability bar */}
+                  <Box sx={{ width: '50%', mr: 1 }}>
+                    <LinearProgress
+                      variant="determinate"
+                      value={Math.round(result.ai_probability * 100)}
+                      aria-labelledby={progressId}
+                      color="secondary"
+                      sx={{
+                        height: 12,
+                        borderRadius: 6,
+                        "& .MuiLinearProgress-bar": { borderRadius: 6 },
+                      }}
 
-              </Box>
+                    />
+                  </Box>
+
+                  <Box sx={{ minWidth: 35 }}>
+                    <Typography variant="body2" sx={{ color: 'secondary' }}>
+                      {`${Math.round(result.ai_probability * 100)}%`}
+                    </Typography>
+                  </Box>
+
+                </Box>
+              </div>
             </Box>
           )}
           {status === 'error' && <Alert severity="error" variant="outlined">{errorMessage || "Something went wrong. Please try again."}</Alert>}
         </Box>
 
       </Box>
-      {status === 'complete' && (
-        // Sentence by sentence output
-        <Box className="sentence-by-sentence" aria-live="polite" sx={{
-          bgcolor: '#FFFF',
-          borderRadius: "1rem",
-          p: 2.5,
-          width: "100%",
-          maxWidth: 500,
-          minHeight: { xs: 300 },
-          color: "#7A5C3A"
-        }}>
-          <SentenceHighlight sentences={result.sentence_results} />
-        </Box>)}
-
-    </div>
+    </div >
 
   );
 }

@@ -48,8 +48,8 @@ export default function SentenceHighlight({ sentences }) {
     }
 
     return (
-        <Box sx={{}}>
-            <Typography variant="h3" component="h3" sx={{ color: "#F6BD60", fontSize: "2.5rem" }}>Sentence-by-Sentence Overview</Typography>
+        <Box className="Sentence-Highlight">
+            <Typography variant="h3" component="h3" sx={{ color: "#755637", fontSize: "2.5rem" }}>Sentence-by-Sentence Overview</Typography>
             <Typography variant="body2" sx={{ mb: 1 }}>
                 Hover or focus for details, or use the buttons to filter by type.
             </Typography>
@@ -88,7 +88,7 @@ export default function SentenceHighlight({ sentences }) {
                     const { range, categoryKey, verdict, finalPercentage } = getDetails(sentence);
                     const isDimmed = activeFilter !== null && activeFilter !== categoryKey;
                     const tooltipContent = (
-                        <Box sx={{ bgcolor: "#84A59D", color: "#F7EDE2" }}>
+                        <Box sx={{ bgcolor: "#4E6D65", color: "#F7EDE2" }}>
                             <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}> {verdict} </Typography>
                             <Typography variant="caption" sx={{ display: "block" }}>  {finalPercentage}% AI probability </Typography>
                             {range && (
@@ -103,8 +103,8 @@ export default function SentenceHighlight({ sentences }) {
                             <Tooltip arrow
                                 slots={{ transition: Zoom, }}
                                 slotProps={{
-                                    tooltip: { sx: { bgcolor: "#84A59D", color: "#F7EDE2", padding: "1.5rem" }, },
-                                    arrow: { sx: { color: "#84A59D" }, },
+                                    tooltip: { sx: { bgcolor: "#4E6D65", color: "#F7EDE2", padding: "1.5rem" }, },
+                                    arrow: { sx: { color: "#4E6D65" }, },
                                 }}
                                 title={tooltipContent}>
                                 <Box component="span" 

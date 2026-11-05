@@ -14,7 +14,6 @@ export default function Navbar() {
       {/* Navbar Links */}
       <div className="nav-links">
         <Link to="/" className="menu">Home</Link>
-        <Link to="/help" className="menu">Help</Link>
       </div>
     </nav>
   );

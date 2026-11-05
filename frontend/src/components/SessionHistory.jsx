@@ -1,28 +1,44 @@
 import { useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
 
+const Ranges = [
+    { key: "strong", min: 0.9, bg: "#F28482", label: "Strong AI Likelihood" },
+    { key: "moderate", min: 0.7, bg: "#F6BD60", label: "Moderate AI Likelihood" },
+    { key: "low", min: 0.5, bg: "#84A59D", label: "Low AI Likelihood" },
+]
+
+const HumanCategory = {bg: "#F5CAC3", label: "Labelled Human" };
+
+function getRange(entry) {
+    if (entry.prediction !== "ai") return null;
+    return (
+        Ranges.find((r) => entry.ai_probability >= r.min) ??
+        Ranges[Ranges.length - 1]
+    )
+}
+
 export default function SessionHistory({ history }) {
     const [selectedId, setSelectedId] = useState(null)
     const selected = history.find((entry) => entry.docId === selectedId) ?? null;
     return (
         <div className="Session-History">
+            <p id="try-session-button">SESSION HISTORY</p>
+            
             <Box aria-live="polite" sx={{
                 bgcolor: '#FFFF',
                 borderRadius: "1rem",
                 p: 2.5,
                 width: "100%",
-                maxWidth: 1024,
-                mx: "auto",
                 minHeight: { xs: 300 },
                 color: "#7A5C3A"
             }}>
-                <Typography variant="h5" component="h3" sx={{color: "#F28482", fontWeight: "bold", fontFamily:'Fraunces'}}>Session history</Typography>
+                <Typography variant="h4" component="h3" sx={{color: "#755637", fontWeight: "bold", fontFamily:'Fraunces'}}>Review Previous Entries.</Typography>
                 {history.length === 0 && <p>No checks yet!</p>}
 
                 {history.map((entry, index) => {
                     const finalPercentage = Math.round(entry.ai_probability * 100);
                     const isSelected = entry.docId === selectedId;
-
+                    const range = getRange(entry);
                     return (
                         <Box
                             key={entry.docId}
@@ -58,7 +74,7 @@ export default function SessionHistory({ history }) {
                                     left: 0,
                                     bottom: 0,
                                     width: `${finalPercentage}%`,
-                                    bgcolor: entry.prediction === "ai" ? "#F28482" : "#84A59D",
+                                    bgcolor: range?.bg ?? HumanCategory.bg,
                                     borderRadius: "8px",
                                 }} />
                             </Box>
@@ -68,7 +84,7 @@ export default function SessionHistory({ history }) {
                 <Box aria-live="polite" sx={{ mt: 2, p: 2, borderRadius: "1rem", bgcolor: "#fabeb43a", minHeight: 80 }}>
                     {selected ? (
                         <>
-                            <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                            <Typography variant="subtitle2" component="h3" sx={{ fontWeight: "bold" }}>
                                 {selected.prediction === "ai" ? "Labelled AI" : "Labelled Human"}
                             </Typography>
                             <Typography variant="body2">

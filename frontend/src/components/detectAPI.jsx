@@ -20,7 +20,7 @@ function submitForm(text) {
                 });
             } else if (text.includes("gromp")) {
                 resolve({
-                    prediction: "ai", ai_probability: 0.89, confidence: 0.89, sentence_results: [{ text: "hello this is a test", label: "ai", ai_probability: 0.64 },
+                    prediction: "ai", ai_probability: 0.79, confidence: 0.89, sentence_results: [{ text: "hello this is a test", label: "ai", ai_probability: 0.64 },
                     { text: "hello this is the second test", label: "ai", ai_probability: 0.83 }
                     ], normalisation_applied: false
                 });
