@@ -8,11 +8,11 @@
     },
     "successful_requests": 20,
     "rejected_requests": 0,
-    "mean_response_ms": 1024.15705,
-    "median_response_ms": 1012.9615,
-    "maximum_response_ms": 1288.683,
+    "mean_response_ms": 973.8664,
+    "median_response_ms": 867.1510000000001,
+    "maximum_response_ms": 1265.672,
     "health_status_during_load": 200,
-    "health_response_ms_during_load": 58.442499954253435,
+    "health_response_ms_during_load": 48.75329998321831,
     "controlled_cost_note": "A 250 ms local experiment-only delay makes inference cost repeatable."
   },
   "protected": {
@@ -24,11 +24,11 @@
     },
     "successful_requests": 2,
     "rejected_requests": 18,
-    "mean_response_ms": 122.1132,
-    "median_response_ms": 79.0765,
-    "maximum_response_ms": 446.533,
+    "mean_response_ms": 124.53280000000001,
+    "median_response_ms": 80.655,
+    "maximum_response_ms": 453.367,
     "health_status_during_load": 200,
-    "health_response_ms_during_load": 45.918399933725595,
+    "health_response_ms_during_load": 38.70580007787794,
     "controlled_cost_note": "A 250 ms local experiment-only delay makes inference cost repeatable."
   },
   "interpretation": "Baseline accepts all concurrent inference work. Protected mode bounds work and rejects excess requests with HTTP 503 while the lightweight health route remains responsive."
