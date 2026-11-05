@@ -223,10 +223,10 @@ Actual committed run on 5 November 2026:
 | Total concurrent requests | 20 | 20 |
 | HTTP `200` | 20 | 2 |
 | HTTP `503` | 0 | 18 |
-| Mean response time | 1024.16 ms | 122.11 ms |
-| Median response time | 1012.96 ms | 79.08 ms |
-| Maximum response time | 1288.68 ms | 446.53 ms |
-| Health during load | `200`, 58.44 ms | `200`, 45.92 ms |
+| Mean response time | 973.87 ms | 124.53 ms |
+| Median response time | 867.15 ms | 80.66 ms |
+| Maximum response time | 1265.67 ms | 453.37 ms |
+| Health during load | `200`, 48.75 ms | `200`, 38.71 ms |
 
 This demonstrates application-level overload control on one machine, not protection against a network-level distributed attack. A timed-out Python worker cannot be forcibly killed; input bounds and the semaphore prevent unbounded accumulation.
 
