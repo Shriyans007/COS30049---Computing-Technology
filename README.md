@@ -255,6 +255,20 @@ A follow-up backend scan was run on 5 November 2026 after the documentation hard
 | Low | Cross-domain JavaScript inclusion | Swagger loads its pinned bundle from the CSP-allow-listed jsDelivr origin |
 | Informational | Modern web application | Technology classification, not an exploit |
 
+A separate clean frontend follow-up scan was completed on 6 November 2026 against only `http://localhost:5173`. It completed with **0 high, 3 medium, 1 low and 2 informational alert categories**:
+
+| Risk | Frontend finding | Instances | Interpretation |
+| --- | --- | ---: | --- |
+| High | None | 0 | No high-risk alert was reported |
+| Medium | Content Security Policy header not set | 3 | Vite's local development server does not add a deployment CSP |
+| Medium | Anti-clickjacking header missing | 3 | The development server does not add framing protection |
+| Medium | Subresource Integrity attribute missing | 3 | Development HTML/resources do not use SRI metadata |
+| Low | `X-Content-Type-Options` header missing | Systemic | The development server does not add `nosniff` |
+| Informational | Suspicious comments | 1 category | Passive source-code heuristic requiring manual review |
+| Informational | Modern web application | 3 | Technology classification, not an exploit |
+
+These frontend results reproduce the categories in the earlier team scan. They describe the Vite hot-reload server used for local marking, not FastAPI or the prediction model. A deployed build must be served by a production web server with CSP, anti-clickjacking and MIME-sniffing headers.
+
 The earlier scan is retained as baseline evidence and the follow-up demonstrates that a CSP is now present. The remaining findings are documented as residual documentation-interface and CDN supply-chain risks; they do not prove compromise of the prediction API. The raw alert categories and interpretation are recorded under `security-evidence/`.
 
 The ZAP findings, dependency audits and direct malicious-request tests are interpreted together. Development-server findings are not presented as vulnerabilities in the model API.
