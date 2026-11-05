@@ -151,7 +151,7 @@ The comparison represents application-level resource exhaustion on one computer,
 **API Documentation (`/docs`):** We verified that the FastAPI auto-generated Swagger UI (`/docs`) provides full endpoint descriptions, summaries, and error response models. Pydantic models include `json_schema_extra` for pre-filled example requests and responses.
 
 
-### Advanced attack
+## Advanced attack
 
 ## Detection evasion
 
