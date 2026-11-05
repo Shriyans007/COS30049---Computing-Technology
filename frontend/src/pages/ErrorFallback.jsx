@@ -1,10 +1,11 @@
 
 export default function ErrorFallback() {
-return (
-  <main className="fallback-page">
-    <h1>Hi there</h1>
-    <p>Try reloading this page or press the button to retun to the home page</p>
-    <a href="/" className="fallback-button">Return to home</a>
-  </main>
-)
+  return (
+    <main className="fallback-page" role="alert">
+      <p className="error-code">Unexpected error</p>
+      <h1>Something went wrong</h1>
+      <p>Your text has not been submitted. Reload the application or return to the detector.</p>
+      <a href="/" className="fallback-button">Reload the detector</a>
+    </main>
+  );
 }

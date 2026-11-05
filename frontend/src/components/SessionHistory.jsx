@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 
 const Ranges = [
     { key: "strong", min: 0.9, bg: "#F28482", label: "Strong AI Likelihood" },
@@ -17,7 +17,7 @@ function getRange(entry) {
     )
 }
 
-export default function SessionHistory({ history }) {
+export default function SessionHistory({ history, onClear }) {
     const [selectedId, setSelectedId] = useState(null)
     const selected = history.find((entry) => entry.docId === selectedId) ?? null;
     return (
@@ -32,7 +32,15 @@ export default function SessionHistory({ history }) {
                 minHeight: { xs: 300 },
                 color: "#7A5C3A"
             }}>
-                <Typography variant="h4" component="h3" sx={{color: "#755637", fontWeight: "bold", fontFamily:'Fraunces'}}>Review Previous Entries.</Typography>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                    <Typography variant="h4" component="h3" sx={{color: "#755637", fontWeight: "bold", fontFamily:'Fraunces'}}>Compare this session</Typography>
+                    {history.length > 0 && (
+                        <Button variant="outlined" size="small" onClick={onClear}>Clear history</Button>
+                    )}
+                </Box>
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                    Select a bar to compare its AI probability, returned label and confidence.
+                </Typography>
                 {history.length === 0 && <p>No checks yet!</p>}
 
                 {history.map((entry, index) => {
@@ -98,8 +106,8 @@ export default function SessionHistory({ history }) {
                                 </Typography>
                             )}
                             <Typography variant="body2">{selected.wordCount} words</Typography>
-                            <Typography variant="body2" sx={{ fontStyle: "italic", mt: 1 }}>
-                                "{selected.fullText}"
+                            <Typography variant="body2" sx={{ fontStyle: "italic", mt: 1, maxHeight: 120, overflow: "auto", overflowWrap: "anywhere" }}>
+                                “{selected.fullText}”
                             </Typography>
                         </>
                     ) : (
