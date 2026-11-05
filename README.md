@@ -240,12 +240,24 @@ Actual dependency audit before remediation found 10 Python advisory entries in S
 
 #### OWASP ZAP dynamic scan
 
-A team member also ran OWASP ZAP against the live local React frontend (`http://localhost:5173`) and FastAPI Swagger interface (`http://127.0.0.1:8000/docs`).
+A team member ran the earlier OWASP ZAP scan against the live local React frontend (`http://localhost:5173`) and FastAPI Swagger interface (`http://127.0.0.1:8000/docs`).
 
-- **Backend findings:** the earlier scan reported a missing Content Security Policy on `/docs` and cross-domain Swagger JavaScript/CSS resources. The API routes were already protected by the security-header middleware. The documentation response was subsequently given a restricted CSP, while Swagger's external resources remain limited to a pinned version from the explicitly permitted jsDelivr origin.
-- **Frontend findings:** ZAP reported missing anti-clickjacking protection and Subresource Integrity on the Vite development server. These relate to Vite's local hot-reload server rather than the compiled production files. A production deployment must serve `frontend/dist` through a configured web server that supplies the deployment-level headers.
+- **Earlier backend findings:** the documentation endpoint was reported as missing a Content Security Policy and using cross-domain Swagger JavaScript/CSS resources. The API routes were already protected by the security-header middleware. The documentation response was subsequently given a restricted CSP and its external resources were pinned to an explicitly permitted jsDelivr version.
+- **Earlier frontend findings:** the Vite development server produced anti-clickjacking and Subresource Integrity findings. These related to Vite's local hot-reload server rather than the compiled production files. A production deployment must serve `frontend/dist` through a configured web server that supplies deployment-level headers.
 
-The scan findings, dependency audits and direct malicious-request tests are interpreted together. Development-server findings are documented rather than presented as vulnerabilities in the model API.
+A follow-up backend scan was run on 5 November 2026 after the documentation hardening. ZAP completed with **0 high, 2 medium, 1 low and 1 informational alert**:
+
+| Risk | Follow-up finding | Interpretation |
+| --- | --- | --- |
+| High | None | No high-risk alert was reported |
+| Medium | CSP `style-src unsafe-inline` | Swagger uses inline presentation styles; inline JavaScript remains blocked |
+| Medium | Subresource Integrity attribute missing | Two pinned Swagger CDN resources did not include SRI attributes |
+| Low | Cross-domain JavaScript inclusion | Swagger loads its pinned bundle from the CSP-allow-listed jsDelivr origin |
+| Informational | Modern web application | Technology classification, not an exploit |
+
+The earlier scan is retained as baseline evidence and the follow-up demonstrates that a CSP is now present. The remaining findings are documented as residual documentation-interface and CDN supply-chain risks; they do not prove compromise of the prediction API. The raw alert categories and interpretation are recorded under `security-evidence/`.
+
+The ZAP findings, dependency audits and direct malicious-request tests are interpreted together. Development-server findings are not presented as vulnerabilities in the model API.
 
 ## Section 2.8 detection evasion
 
