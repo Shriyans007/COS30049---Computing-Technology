@@ -87,6 +87,12 @@ The default limits are 20–10,000 characters, 40,000 UTF-8 bytes and 100
 sentences. Relevant failures use `400`, `413`, `415`, `422`, `429`, `503` or
 `500`; internal paths and stack traces are logged server-side only.
 
+
+###Architecture Diagram
+
+<img width="1840" height="884" alt="image" src="https://github.com/user-attachments/assets/205e999d-08da-4363-a740-8195a1cac218" />
+
+
 ### Security design
 
 The API applies NFKC, removes zero-width/unsafe format characters, normalises
