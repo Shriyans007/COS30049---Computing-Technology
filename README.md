@@ -315,7 +315,7 @@ python -m pip_audit -r backend\requirements.txt
 
 Final verified results:
 
-- Backend: 25 tests passed (one upstream TestClient deprecation warning).
+- Backend: 20 tests passed (one upstream TestClient deprecation warning).
 - Frontend: 10 tests passed across 4 files.
 - ESLint: passed with no errors.
 - Vite production build: passed (one non-blocking 500 kB chunk-size warning).
