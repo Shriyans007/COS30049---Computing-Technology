@@ -238,6 +238,15 @@ This demonstrates application-level overload control on one machine, not protect
 
 Actual dependency audit before remediation found 10 Python advisory entries in Starlette 0.49.3 and 6 npm vulnerable packages (1 critical, 5 moderate). FastAPI/Starlette and the affected frontend development tools were changed to compatible fixed versions. Re-running both audits found zero known vulnerabilities. Commands and the exact interpretation are in `security-evidence/README.md`.
 
+#### OWASP ZAP dynamic scan
+
+A team member also ran OWASP ZAP against the live local React frontend (`http://localhost:5173`) and FastAPI Swagger interface (`http://127.0.0.1:8000/docs`).
+
+- **Backend findings:** the earlier scan reported a missing Content Security Policy on `/docs` and cross-domain Swagger JavaScript/CSS resources. The API routes were already protected by the security-header middleware. The documentation response was subsequently given a restricted CSP, while Swagger's external resources remain limited to a pinned version from the explicitly permitted jsDelivr origin.
+- **Frontend findings:** ZAP reported missing anti-clickjacking protection and Subresource Integrity on the Vite development server. These relate to Vite's local hot-reload server rather than the compiled production files. A production deployment must serve `frontend/dist` through a configured web server that supplies the deployment-level headers.
+
+The scan findings, dependency audits and direct malicious-request tests are interpreted together. Development-server findings are documented rather than presented as vulnerabilities in the model API.
+
 ## Section 2.8 detection evasion
 
 ```powershell
