@@ -11,7 +11,7 @@ html {
 body {
     min-width: 320px;
     background: #F7EDE2;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
 }
 
 :focus-visible {
@@ -23,7 +23,7 @@ body {
 a,
 p,
 h5 {
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
     font-size: 100%;
 }
 
@@ -61,7 +61,7 @@ h5 {
     gap: 2%;
     text-decoration: none;
     color: #38291A;
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: 'Fraunces Variable', serif;
     font-weight: bold;
 }
 
@@ -89,18 +89,19 @@ h5 {
     justify-content: center;
     text-align: center;
     font-size: clamp(2.25rem, 9vw, 6rem);
-    font-family: Georgia, "Times New Roman", serif;
-    color: #8A5A00;
+    font-family: 'Fraunces Variable', serif;
+    color: #6d4608;
     font-weight: 900;
 }
 
-#instantly {
-    color: #496A63;
+#againstai {
+    color: #ED5552;
 }
 
-.banner .italic-words {
-    color: #B93937;
+#forever{
+    color:#496A63
 }
+
 
 .banner p {
     display: flex;
@@ -157,12 +158,12 @@ h5 {
     padding: 1.5em 2em;
     background-color: #84A59D;
     border-radius: 1.2em;
-    color: #3F2E1D;
+    color: #3B2A1A;
     font-weight: 400;
 }
 
 .bubblebold {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: 'Fraunces Variable', serif;
     font-weight: 900;
     font-size: 1.5em;
 }
@@ -190,7 +191,7 @@ h5 {
 
 #try-session-button {
     background-color: #F6BD60;
-    color: #584028;
+    color: #694d31;
     padding: 0.5em 1rem;
     border-radius: 5em;
     font-size: 0.8rem;
@@ -199,8 +200,8 @@ h5 {
 
 #ai-detection {
     padding: 1.5em;
-    color: #3B2A1A;
-    font-family: Georgia, "Times New Roman", serif;
+    color: #584028;
+    font-family: 'Fraunces Variable', serif;
     font-size: 1.25em;
     font-weight: 900;
 }
@@ -214,7 +215,7 @@ h5 {
 #text-guidance {
     color: #3B2A1A;
     font-weight: 500;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: "Plus Jakarta Sans", Arial, sans-serif;
     font-size: 0.8rem;
     padding-top: 2%;
 
@@ -286,6 +287,7 @@ h5 {
     width: 100%;
     background-color: #fff;
     color: #7A5C3A;
+    font-family: 'Fraunces Variable';
     border-radius: 1rem;
     padding: 1.25rem;
     text-align: center;
@@ -316,7 +318,6 @@ h5 {
 /* Session History */
 .Session-History {
     gap: 1rem;
-    max-width: 1024px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -339,7 +340,7 @@ h5 {
 
 .error-page h1,
 .fallback-page h1 {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: 'Fraunces Variable', serif;
     font-size: clamp(2rem, 8vw, 4rem);
 }
 

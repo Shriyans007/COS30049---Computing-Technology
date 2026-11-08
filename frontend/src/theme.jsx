@@ -1,5 +1,10 @@
 import { createTheme } from "@mui/material/styles";
 
+const headingFont = {
+  fontFamily: "'Fraunces Variable', serif",
+  fontWeight: 900,
+};
+
 const theme = createTheme({
   palette: {
     primary: { main: "#F6BD60", contrastText: "#3B2A1A" },
@@ -9,10 +14,10 @@ const theme = createTheme({
     background: { default: "#F7EDE2", paper: "#FFFFFF" },
   },
   typography: {
-    fontFamily: '"Segoe UI", Arial, sans-serif',
-    h1: { fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 900 },
-    h2: { fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 900 },
-    h3: { fontFamily: 'Georgia, "Times New Roman", serif', fontWeight: 900 },
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    h1: headingFont,
+    h2: headingFont,
+    h3: headingFont,
   },
   shape: { borderRadius: 24 },
 });

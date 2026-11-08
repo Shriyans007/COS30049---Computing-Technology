@@ -115,7 +115,9 @@ export default function AIDetection({ onResult }) {
                     bgcolor: "#fabeb43a",
                     borderRadius: "1rem",
                     overflow: "hidden",
-                    p: 2,
+                    px: 2,
+                    pb: 2,
+                    pt: "30px",
                     fontSize: "1rem",
                     fontWeight: "normal",
                     color: "#110f0c",
@@ -162,7 +164,7 @@ export default function AIDetection({ onResult }) {
           )}
           {status === 'complete' && (
             <Box className="card-output">
-              <Chip label="Analysis complete" color="secondary" size="small" />
+              <Chip label="Analysis complete" color="secondary" size="small"/>
               <Box sx={{ position: 'relative', display: 'inline-flex' }}>
                 {/* Confidence bar */}
                 <CircularProgress variant="determinate" size={100} value={Math.round(result.confidence * 100)} />

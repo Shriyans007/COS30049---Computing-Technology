@@ -7,6 +7,11 @@ import { StyledEngineProvider } from "@mui/material/styles";
 import App from "./App.jsx";
 import ErrorFallback from "./pages/ErrorFallback.jsx";
 import theme from "./theme.jsx";
+import "@fontsource-variable/fraunces/full.css";
+import "@fontsource-variable/fraunces/full-italic.css";
+import "@fontsource/plus-jakarta-sans/400.css";
+import "@fontsource/plus-jakarta-sans/500.css";
+import "@fontsource/plus-jakarta-sans/700.css";
 import "./styles.css";
 
 createRoot(document.getElementById("root")).render(

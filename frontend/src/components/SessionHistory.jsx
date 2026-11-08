@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, LinearProgress } from "@mui/material";
 
 const Ranges = [
     { key: "strong", min: 0.9, bg: "#F28482", label: "Strong AI Likelihood" },
@@ -7,7 +7,7 @@ const Ranges = [
     { key: "low", min: 0.5, bg: "#84A59D", label: "Low AI Likelihood" },
 ]
 
-const HumanCategory = {bg: "#F5CAC3", label: "Labelled Human" };
+const HumanCategory = { bg: "#F8C2C1", label: "Labelled Human" };
 
 function getRange(entry) {
     if (entry.prediction !== "ai") return null;
@@ -23,7 +23,7 @@ export default function SessionHistory({ history, onClear }) {
     return (
         <div className="Session-History">
             <p id="try-session-button">SESSION HISTORY</p>
-            
+
             <Box aria-live="polite" sx={{
                 bgcolor: '#FFFF',
                 borderRadius: "1rem",
@@ -33,7 +33,7 @@ export default function SessionHistory({ history, onClear }) {
                 color: "#7A5C3A"
             }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1, mb: 2 }}>
-                    <Typography variant="h4" component="h3" sx={{color: "#755637", fontWeight: "bold", fontFamily:'Fraunces'}}>Compare this session</Typography>
+                    <Typography variant="h4" component="h3" sx={{ color: "#755637", fontWeight: "bold", fontFamily: 'Fraunces Variable' }}>Compare this session</Typography>
                     {history.length > 0 && (
                         <Button variant="outlined" size="small" onClick={onClear}>Clear history</Button>
                     )}
@@ -73,19 +73,21 @@ export default function SessionHistory({ history, onClear }) {
                                 Check {index + 1}: {finalPercentage}% AI probability
                             </Typography>
 
-                            {/* grey track */}
-                            <Box sx={{ position: "relative", height: 16, bgcolor: "#f1ece6", borderRadius: "8px", mt: 0.5 }}>
-                                {/* coloured bar */}
-                                <Box sx={{
-                                    position: "absolute",
-                                    top: 0,
-                                    left: 0,
-                                    bottom: 0,
-                                    width: `${finalPercentage}%`,
-                                    bgcolor: range?.bg ?? HumanCategory.bg,
+                            <LinearProgress
+                                variant="determinate"
+                                value={finalPercentage}
+                                aria-hidden="true"
+                                sx={{
+                                    height: 16,
                                     borderRadius: "8px",
-                                }} />
-                            </Box>
+                                    mt: 0.5,
+                                    bgcolor: "#f1ece6",
+                                    "& .MuiLinearProgress-bar": {
+                                        borderRadius: "8px",
+                                        bgcolor: range?.bg ?? HumanCategory.bg,
+                                    },
+                                }}
+                            />
                         </Box>
                     );
                 })}
