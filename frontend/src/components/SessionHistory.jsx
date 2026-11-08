@@ -32,6 +32,7 @@ export default function SessionHistory({ history, onClear }) {
                 minHeight: { xs: 300 },
                 color: "#7A5C3A"
             }}>
+                {/* Header + Clear Button */}
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1, mb: 2 }}>
                     <Typography variant="h4" component="h3" sx={{ color: "#755637", fontWeight: "bold", fontFamily: 'Fraunces Variable' }}>Compare this session</Typography>
                     {history.length > 0 && (
@@ -43,6 +44,7 @@ export default function SessionHistory({ history, onClear }) {
                 </Typography>
                 {history.length === 0 && <p>No checks yet!</p>}
 
+                {/* Session History "Buttons" / Checks */}
                 {history.map((entry, index) => {
                     const finalPercentage = Math.round(entry.ai_probability * 100);
                     const isSelected = entry.docId === selectedId;
@@ -91,6 +93,8 @@ export default function SessionHistory({ history, onClear }) {
                         </Box>
                     );
                 })}
+
+                {/* Expanded Session Details */}
                 <Box aria-live="polite" sx={{ mt: 2, p: 2, borderRadius: "1rem", bgcolor: "#fabeb43a", minHeight: 80 }}>
                     {selected ? (
                         <>

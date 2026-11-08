@@ -54,6 +54,7 @@ export default function SentenceHighlight({ sentences }) {
                 Hover or focus for details, or use the buttons to filter by type.
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2, justifyContent: "center" }}>
+                {/* Category Filters */}
                 {Categories.map((category) => {
                     const active = activeFilter === category.key;
                     return (
@@ -79,11 +80,13 @@ export default function SentenceHighlight({ sentences }) {
                         />
                     );
                 })}
+                {/* Toggle Filter off / Reset Filter*/}
                 {activeFilter !== null && (
                     <Button size="small" onClick={() => setActiveFilter(null)}>Show all</Button>
                 )}
             </Box>
             <p>
+                {/* Sentence Highlighting */}
                 {sentences.map((sentence, index) => {
                     const { range, categoryKey, verdict, finalPercentage } = getDetails(sentence);
                     const isDimmed = activeFilter !== null && activeFilter !== categoryKey;
@@ -99,6 +102,7 @@ export default function SentenceHighlight({ sentences }) {
                         </Box>
                     );
                     return (
+                        // Tooltips per sentence
                         <Fragment key={index}>
                             <Tooltip arrow
                                 slots={{ transition: Zoom, }}

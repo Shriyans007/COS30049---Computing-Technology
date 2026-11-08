@@ -22,6 +22,7 @@ export default function AIDetection({ onResult }) {
     human: "Likely human-written",
   };
 
+  // Validate inputs 
   async function handleSubmit(e) {
     e.preventDefault();
 
