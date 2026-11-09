@@ -85,9 +85,8 @@ h5 {
 }
 
 .banner h1 {
-    display: flex;
-    justify-content: center;
     text-align: center;
+    column-gap: 0.3em;
     font-size: clamp(2.25rem, 9vw, 6rem);
     font-family: 'Fraunces Variable', serif;
     color: #6d4608;
@@ -96,10 +95,12 @@ h5 {
 
 #againstai {
     color: #ED5552;
+    display: flex;
+    justify-content: center;
 }
 
-#forever{
-    color:#496A63
+#forever {
+    color: #496A63
 }
 
 
@@ -324,6 +325,8 @@ h5 {
     align-items: center;
 }
 
+/* Error Pages */
+
 .error-page,
 .fallback-page {
     min-height: calc(100vh - 64px);
@@ -385,6 +388,10 @@ h5 {
         background-color: #F7EDE2;
         padding-top: 2em;
         width: 100%;
+    }
+    #againstai {
+        flex-direction: column;
+        align-items: center;
     }
 
     .anchor-buttons {

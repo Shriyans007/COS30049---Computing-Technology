@@ -2,7 +2,7 @@ export default function Banner() {
   return (
     <div className="banner">
       <h1>ag<span className="italic-words">ai</span>nster</h1>
-      <h1 id="againstai">Against AI. <span id="forever">&nbsp; Forever.</span></h1> 
+      <h1 id="againstai">Against AI. <span id="forever">Forever.</span></h1> 
       <p>Paste text to receive an AI-likelihood estimate, sentence-level explanation and session comparison.</p>
 
       <div className="anchor-buttons">
